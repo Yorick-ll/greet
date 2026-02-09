@@ -1,0 +1,29 @@
+# 构建产物
+/bin/
+*.exe
+*.dll
+*.so
+*.dylib
+
+# 测试与覆盖率
+*.test
+*.out
+coverage.html
+
+# 依赖
+/vendor/
+
+# 本地/环境配置（按需取消注释）
+# .env
+# *.local.yaml
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+
+# 系统文件
+.DS_Store
+Thumbs.db
