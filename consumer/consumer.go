@@ -25,6 +25,7 @@ func main() {
 
 	var c config.Config
 	conf.MustLoad(*configFile, &c)
+	config.SaveConf(c) // 同步到全局 Cfg，供 config.Cfg.Sol.NodeUrl 等使用
 	ctx := svc.NewServiceContext(c)
 
 	sg := service.NewServiceGroup()

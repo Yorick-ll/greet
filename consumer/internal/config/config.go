@@ -32,6 +32,10 @@ type Consumer struct {
 	Concurrency int `json:"Concurrency" json:",env=CONSUMER_CONCURRENCY"`
 }
 
+func SaveConf(cf Config) {
+	Cfg = cf
+}
+
 func FindChainRpcByChainId(chainId int) (rpc string) {
 	var rpcs []string
 	var useFrequency *int
