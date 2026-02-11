@@ -79,8 +79,8 @@ func (s *SlotService) ReadSlotMessage() {
 		return
 	}
 	s.maxSlot = resp.Params.Result.Slot
-	s.realtimech <- s.maxSlot
-	fmt.Println("last slot is:", <-s.realtimech)
+	s.realtimech <- resp.Params.Result.Slot
+	// fmt.Println("last slot is:", <-s.realtimech)
 
 }
 

@@ -6,6 +6,7 @@ import (
 
 	"greet/consumer/consumer"
 	"greet/consumer/internal/config"
+	"greet/consumer/internal/logic/sol/block"
 	"greet/consumer/internal/logic/sol/slot"
 	"greet/consumer/internal/server"
 	"greet/consumer/internal/svc"
@@ -40,6 +41,11 @@ func main() {
 
 	{
 		var realChan = make(chan uint64, 50)
+
+		// 消费者
+		for i := 0; i < c.Consumer.Concurrency; i++ {
+			sg.Add(block.NewBlockService(ctx, "block-real", realChan, i))
+		}
 		//生产者
 		sg.Add(slot.NewSlotServiceGroup(ctx, realChan))
 	}

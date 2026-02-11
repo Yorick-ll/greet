@@ -1,7 +1,8 @@
 Name: consumer.rpc
 ListenOn: 0.0.0.0:8080
 
-
+Consumer:
+  Concurrency: 5
 
 Sol:
   ChainId: 100000
