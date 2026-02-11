@@ -13,6 +13,7 @@ import (
 
 	"github.com/blocto/solana-go-sdk/client"
 	"github.com/blocto/solana-go-sdk/rpc"
+	"github.com/blocto/solana-go-sdk/types"
 	"github.com/duke-git/lancet/v2/slice"
 	"github.com/gorilla/websocket"
 	"github.com/mr-tron/base58"
@@ -22,6 +23,12 @@ import (
 )
 
 var ErrServiceStop = errors.New("service stop")
+
+const SolChainIdInt = 100000
+
+const ProgramStrPumpFun = "6EF8rrecthR5Dkzon8Nwu78hRvfCKubJ14M5uBEwF6P"
+
+var ErrUnknownProgram = errors.New("unknown program")
 
 type BlockService struct {
 	Name string
@@ -102,9 +109,38 @@ func (s *BlockService) ProcessBlock(ctx context.Context, slot int64) {
 	}
 
 	slice.ForEach[client.BlockTransaction](blockInfo.Transactions, func(index int, tx client.BlockTransaction) {
-		if len(tx.Transaction.Signatures) > 0 {
-			sigB58 := base58.Encode(tx.Transaction.Signatures[0])
-			fmt.Println("Transaction:", sigB58)
-		}
+		DeCodeTX(&tx)
 	})
+}
+
+func DeCodeTX(tx *client.BlockTransaction) {
+	if tx == nil {
+		return
+	}
+	// 遍历交易的所有指令
+	for i := range tx.Transaction.Message.Instructions {
+		instruction := &tx.Transaction.Message.Instructions[i]
+		DeCodeInstruction(instruction, tx)
+	}
+}
+
+func DeCodeInstruction(instruction *types.CompiledInstruction, tx *client.BlockTransaction) (err error) {
+
+	if instruction == nil {
+		return errors.New("instruction is nil")
+	}
+
+	if len(tx.AccountKeys) == 0 {
+		return errors.New("account keys is empty")
+	}
+
+	program := tx.AccountKeys[instruction.ProgramIDIndex].String()
+
+	if program == ProgramStrPumpFun {
+		sig858 := base58.Encode(tx.Transaction.Signatures[0])
+		fmt.Println("ProgramStrPumpFun:", sig858)
+		return nil
+	}
+
+	return ErrUnknownProgram
 }
