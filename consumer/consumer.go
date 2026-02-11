@@ -39,8 +39,9 @@ func main() {
 	sg.Add(s)
 
 	{
+		var realChan = make(chan uint64, 50)
 		//生产者
-		sg.Add(slot.NewSlotServiceGroup(ctx))
+		sg.Add(slot.NewSlotServiceGroup(ctx, realChan))
 	}
 
 	fmt.Printf("Starting rpc server at %s...\n", c.ListenOn)

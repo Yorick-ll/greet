@@ -9,8 +9,8 @@ type SlotServiceGroup struct {
 	Ws *SlotWsService
 }
 
-func NewSlotServiceGroup(sc *svc.ServiceContext) *SlotServiceGroup {
-	slotService := NewSlotService(sc)
+func NewSlotServiceGroup(sc *svc.ServiceContext, realChan chan uint64) *SlotServiceGroup {
+	slotService := NewSlotService(sc, realChan)
 	return &SlotServiceGroup{
 		SlotService: slotService,
 		Ws:          NewSlotWsService(slotService),

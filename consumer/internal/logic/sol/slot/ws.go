@@ -28,6 +28,7 @@ func (s *SlotWsService) Start() {
 		s.Infof("SlotWsService:ShutdownListener")
 		s.cancel(errors.New("close slot"))
 	})
+	fmt.Printf("SlotWsService Start")
 	s.SlotWs()
 }
 
@@ -78,7 +79,8 @@ func (s *SlotService) ReadSlotMessage() {
 		return
 	}
 	s.maxSlot = resp.Params.Result.Slot
-	fmt.Println("slot is:", s.maxSlot)
+	s.realtimech <- s.maxSlot
+	fmt.Println("last slot is:", <-s.realtimech)
 
 }
 
@@ -116,6 +118,6 @@ type SlotResp struct {
 			Parent uint64 `json:"parent"`
 			Root   uint64 `json:"root"`
 		} `json:"result"`
-		Subscription int `json:"subscription"`
+		Subscription uint64 `json:"subscription"`
 	} `json:"params"`
 }
