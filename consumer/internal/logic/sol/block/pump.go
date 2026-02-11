@@ -32,13 +32,32 @@ func DecodePumpInstruction(instruction *types.CompiledInstruction, tx *client.Bl
 		fmt.Println("PumpInstructionBuy", txSig)
 	case PumpInstructionSell:
 		fmt.Println("PumpInstructionSell", txSig)
-
+		return
 	case PumpInstructionCreate:
 		fmt.Println("PumpInstructionCreate", txSig)
-
+		return
 	default:
 		fmt.Println("Unknown pump instruction", txSig)
 		return
+	}
+
+	accountKeys := tx.AccountKeys
+
+	if len(instruction.Accounts) != 16 && len(accountKeys) != 14 {
+		fmt.Println("pump swap account keys is not valid")
+		return
+	}
+
+	global := accountKeys[instruction.Accounts[0]]
+
+	fmt.Println("global", global)
+
+	if len(instruction.Accounts) == 16 {
+		account := binary.LittleEndian.Uint64(instruction.Data[8:16])
+		maxSolCost := binary.LittleEndian.Uint64(instruction.Data[16:24])
+
+		fmt.Println("account", account)
+		fmt.Println("max_sol_cost", maxSolCost)
 	}
 
 }
