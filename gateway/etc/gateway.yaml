@@ -1,0 +1,14 @@
+Name: greet
+Host: 127.0.0.1
+Port: 8888
+Upstreams:
+  - Grpc:
+      Target: localhost:8080
+    # protoset mode
+    ProtoSets:
+      - consumer.pb
+    # Mappings can also be written in proto options
+    Mappings:
+      - Method: get
+        Path: /ping
+        RpcPath: consumer.Consumer/Ping

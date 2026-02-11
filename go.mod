@@ -5,6 +5,8 @@ go 1.24.0
 toolchain go1.24.13
 
 require (
+	github.com/gorilla/websocket v1.5.3
+	github.com/pkg/errors v0.9.1
 	github.com/zeromicro/go-zero v1.9.4
 	google.golang.org/grpc v1.78.0
 	google.golang.org/protobuf v1.36.11
