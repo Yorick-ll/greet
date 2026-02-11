@@ -1,6 +1,10 @@
 Name: consumer.rpc
 ListenOn: 0.0.0.0:8080
-# Etcd:
-#   Hosts:
-#   - 127.0.0.1:2379
-#   Key: consumer.rpc
+
+
+
+Sol:
+  ChainId: 100000
+  NodeUrl:
+    - "https://mainnet.helius-rpc.com/?api-key=d0c0b169-0024-488d-b3bb-3ff0f9ea43b5"
+  WSUrl: "wss://mainnet.helius-rpc.com/?api-key=d0c0b169-0024-488d-b3bb-3ff0f9ea43b5"

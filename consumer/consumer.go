@@ -6,6 +6,7 @@ import (
 
 	"greet/consumer/consumer"
 	"greet/consumer/internal/config"
+	"greet/consumer/internal/logic/sol/slot"
 	"greet/consumer/internal/server"
 	"greet/consumer/internal/svc"
 
@@ -25,6 +26,8 @@ func main() {
 	conf.MustLoad(*configFile, &c)
 	ctx := svc.NewServiceContext(c)
 
+	sg := service.NewServiceGroup()
+	defer sg.Stop()
 	s := zrpc.MustNewServer(c.RpcServerConf, func(grpcServer *grpc.Server) {
 		consumer.RegisterConsumerServer(grpcServer, server.NewConsumerServer(ctx))
 
@@ -32,8 +35,14 @@ func main() {
 			reflection.Register(grpcServer)
 		}
 	})
-	defer s.Stop()
+
+	sg.Add(s)
+
+	{
+		//生产者
+		sg.Add(slot.NewSlotServiceGroup(ctx))
+	}
 
 	fmt.Printf("Starting rpc server at %s...\n", c.ListenOn)
-	s.Start()
+	sg.Start()
 }
