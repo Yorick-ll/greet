@@ -16,7 +16,6 @@ import (
 	"github.com/blocto/solana-go-sdk/types"
 	"github.com/duke-git/lancet/v2/slice"
 	"github.com/gorilla/websocket"
-	"github.com/mr-tron/base58"
 	"github.com/panjf2000/ants/v2"
 	"github.com/zeromicro/go-zero/core/logx"
 	"github.com/zeromicro/go-zero/core/threading"
@@ -89,7 +88,7 @@ func (s *BlockService) GetBlockFromHttp() {
 				return
 			}
 			//打印当前最新slot
-			fmt.Println("current slot is:", slot)
+			// fmt.Println("current slot is:", slot)
 
 			threading.GoSafe(func() {
 				s.ProcessBlock(ctx, int64(slot))
@@ -137,9 +136,7 @@ func DeCodeInstruction(instruction *types.CompiledInstruction, tx *client.BlockT
 	program := tx.AccountKeys[instruction.ProgramIDIndex].String()
 
 	if program == ProgramStrPumpFun {
-		sig858 := base58.Encode(tx.Transaction.Signatures[0])
-		fmt.Println("ProgramStrPumpFun:", sig858)
-		return nil
+		DecodePumpInstruction(instruction, tx)
 	}
 
 	return ErrUnknownProgram
