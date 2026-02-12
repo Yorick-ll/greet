@@ -42,10 +42,16 @@ func main() {
 
 	{
 		var realChan = make(chan uint64, 50)
-
+		var errChan = make(chan uint64, 1)
 		// 消费者
 		for i := 0; i < c.Consumer.Concurrency; i++ {
 			sg.Add(block.NewBlockService(ctx, "block-real", realChan, i))
+		}
+
+		// 失败
+
+		for i := 0; i < c.Consumer.Concurrency; i++ {
+			sg.Add(block.NewBlockService(ctx, "block-real", errChan, i))
 		}
 		//生产者
 		sg.Add(slot.NewSlotServiceGroup(ctx, realChan))

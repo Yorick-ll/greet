@@ -9,3 +9,17 @@ Sol:
   NodeUrl:
     - "https://mainnet.helius-rpc.com/?api-key=d0c0b169-0024-488d-b3bb-3ff0f9ea43b5"
   WSUrl: "wss://mainnet.helius-rpc.com/?api-key=d0c0b169-0024-488d-b3bb-3ff0f9ea43b5"
+
+Mysql:
+  User: root
+  Password: web3web3
+  Host: 43.99.100.82
+  Port: 3306
+  DBname: fun_dex
+
+# Mysql:
+#   User: root
+#   Password: web3ite.fun
+#   Host: sh-cdb-d1aqnkzo.sql.tencentcdb.com
+#   Port: 26218
+#   DBname: fun_dexs

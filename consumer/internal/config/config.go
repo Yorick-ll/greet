@@ -9,15 +9,17 @@ import (
 
 var Cfg Config
 
+const SolChainIdInt = 100000
+
 var (
 	SolRpcUseFrequency int
 )
 
 type Config struct {
 	zrpc.RpcServerConf
-	Sol Chain `json:"Sol,optional"`
-
-	Consumer Consumer `json:"Consumer,optional"`
+	Sol         Chain       `json:"Sol,optional"`
+	MySQLConfig MySQLConfig `json:"Mysql"`
+	Consumer    Consumer    `json:"Consumer,optional"`
 }
 
 type Chain struct {
@@ -26,6 +28,14 @@ type Chain struct {
 	MEVNodeUrl string   `json:"MevNodeUrl,optional"  json:",env=SOL_MEVNODEURL"`
 	WSUrl      string   `json:"WSUrl,optional"       json:",env=SOL_WSURL"`
 	StartBlock uint64   `json:"StartBlock,optional"  json:",env=SOL_STARTBLOCK"`
+}
+
+type MySQLConfig struct {
+	User     string `json:"User"     json:",env=MYSQL_USER"`
+	Password string `json:"Password" json:",env=MYSQL_PASSWORD"`
+	Host     string `json:"Host"     json:",env=MYSQL_HOST"`
+	Port     int    `json:"Port"     json:",env=MYSQL_PORT"`
+	DBName   string `json:"DBname"   json:",env=MYSQL_DBNAME"`
 }
 
 type Consumer struct {

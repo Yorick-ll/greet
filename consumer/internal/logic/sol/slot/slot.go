@@ -13,8 +13,9 @@ import (
 var ErrServiceStop = errors.New("service stop")
 
 type SlotService struct {
-	Conn *websocket.Conn
-	sc   *svc.ServiceContext
+	Conn    *websocket.Conn
+	errorCh chan uint64
+	sc      *svc.ServiceContext
 	logx.Logger
 	ctx        context.Context
 	cancel     func(err error)
@@ -47,6 +48,6 @@ func (s *SlotService) Stop() {
 			s.Error("programUnsubscribe", err)
 		}
 
-		err = s.Conn.Close()
+		_ = s.Conn.Close()
 	}
 }

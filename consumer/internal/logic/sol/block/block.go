@@ -5,8 +5,10 @@ import (
 	"errors"
 	"fmt"
 	"greet/consumer/internal/svc"
+	"greet/model/solmodel"
 	"greet/pkg/constants"
 	"net/http"
+	"strings"
 	"time"
 
 	"greet/consumer/internal/config"
@@ -22,8 +24,6 @@ import (
 )
 
 var ErrServiceStop = errors.New("service stop")
-
-const SolChainIdInt = 100000
 
 const ProgramStrPumpFun = "6EF8rrecthR5Dkzon8Nwu78hRvfCKubJ14M5uBEwF6P"
 
@@ -59,6 +59,7 @@ func (s *BlockService) Start() {
 }
 
 func NewBlockService(sc *svc.ServiceContext, name string, slotChan chan uint64, index int) *BlockService {
+	fmt.Println("name:", name)
 	ctx, cancel := context.WithCancelCause(context.Background())
 	pool, _ := ants.NewPool(5)
 	solService := &BlockService{
@@ -101,15 +102,58 @@ func (s *BlockService) ProcessBlock(ctx context.Context, slot int64) {
 	if slot == 0 {
 		return
 	}
+	// 查询当前slot是否被处理过
+	block, err := s.sc.BlockModel.FindOneBySlot(ctx, slot)
+	switch {
+	case err != nil && strings.Contains(err.Error(), "record not found"):
+		block = &solmodel.Block{
+			Slot: slot,
+		}
+	default:
+		s.Errorf("processBlock:%v findOneBySlot: %v, error: %v", slot, slot, err)
+		return
+	}
 
 	blockInfo, err := GetSolBlockInfoDelay(s.sc.GetSolClient(), ctx, uint64(slot))
-	if err != nil || blockInfo == nil {
+	if err == nil || blockInfo == nil {
+		if err != nil && strings.Contains(err.Error(), "was skipped") {
+			block.Status = constants.BlockSkipped
+
+			s.Infof("processBlock:%v getSolBltants.BlockSkockInfo was skipped, err: %v", slot, err)
+			_ = s.sc.BlockModel.Insert(ctx, block)
+			return
+		}
+		// 异常区块记录，后续做兜底策略，把丢的区块补回来
+		block.Status = constants.BlockFailed
+		if block.BlockTime.IsZero() {
+			block.BlockTime = time.Now()
+		}
+		err = s.sc.BlockModel.Insert(ctx, block)
 		s.Errorf("processBlock:%v getSolBlockInfo error: %v", slot, err)
+		return
 	}
+	// 设置区块时间
+	if blockInfo.BlockTime != nil {
+		block.BlockTime = *blockInfo.BlockTime
+	} else {
+		block.BlockTime = time.Now()
+	}
+	// 设置区块高度
+	if blockInfo.BlockHeight != nil {
+		block.BlockHeight = *blockInfo.BlockHeight
+	}
+	block.Status = constants.BlockProcessed
 
 	slice.ForEach[client.BlockTransaction](blockInfo.Transactions, func(index int, tx client.BlockTransaction) {
 		DeCodeTX(&tx)
 	})
+
+	err = s.sc.BlockModel.Insert(ctx, block)
+	if err != nil {
+		fmt.Println("block insert err:", err)
+		return
+	}
+	fmt.Println("Block insert successfully!, the corresponding slot is:", slot)
 }
 
 func DeCodeTX(tx *client.BlockTransaction) {
