@@ -5,9 +5,8 @@ import (
 
 	"github.com/zeromicro/go-zero/core/logx"
 
-	"greet/api/internal/svc"
-	"greet/api/internal/types"
-	"greet/rpc/greet"
+	"greet/gateway/internal/svc"
+	"greet/gateway/internal/types"
 )
 
 type PingLogic struct {

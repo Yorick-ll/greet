@@ -2,8 +2,9 @@ package svc
 
 import (
 	"greet/api/internal/config"
-	"github.com/zeromicro/go-zero/zrpc"
 	"greet/rpc/greet"
+
+	"github.com/zeromicro/go-zero/zrpc"
 )
 
 type ServiceContext struct {

@@ -6,9 +6,10 @@ package handler
 import (
 	"net/http"
 
+	"greet/gateway/internal/logic"
+	"greet/gateway/internal/svc"
+
 	"github.com/zeromicro/go-zero/rest/httpx"
-	"greet/api/internal/logic"
-	"greet/api/internal/svc"
 )
 
 func pingHandler(svcCtx *svc.ServiceContext) http.HandlerFunc {
