@@ -40,6 +40,7 @@ type BlockService struct {
 	ctx        context.Context
 	cancel     func(err error)
 	name       string
+	solPrice   float64
 }
 
 func (s *BlockService) Stop() {
@@ -115,7 +116,8 @@ func (s *BlockService) ProcessBlock(ctx context.Context, slot int64) {
 	}
 
 	blockInfo, err := GetSolBlockInfoDelay(s.sc.GetSolClient(), ctx, uint64(slot))
-	if err == nil || blockInfo == nil {
+	// 只有真正出错（err != nil）或没拿到区块数据（blockInfo == nil）时，才进入异常分支
+	if err != nil || blockInfo == nil {
 		if err != nil && strings.Contains(err.Error(), "was skipped") {
 			block.Status = constants.BlockSkipped
 
@@ -143,6 +145,21 @@ func (s *BlockService) ProcessBlock(ctx context.Context, slot int64) {
 		block.BlockHeight = *blockInfo.BlockHeight
 	}
 	block.Status = constants.BlockProcessed
+
+	//
+	var tokenAccountMap = make(map[string]*TokenAccount)
+
+	solPrice := s.GetBlockSolPrice(ctx, blockInfo, tokenAccountMap)
+
+	if solPrice == 0 {
+
+		s.Error("Sol Price not found")
+		return
+	}
+
+	fmt.Println("Sol Price:", solPrice)
+
+	block.SolPrice = solPrice
 
 	slice.ForEach[client.BlockTransaction](blockInfo.Transactions, func(index int, tx client.BlockTransaction) {
 		DeCodeTX(&tx)

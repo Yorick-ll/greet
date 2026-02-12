@@ -25,6 +25,7 @@ type (
 		WithSession(tx *gorm.DB) BlockModel
 		FindFirstFailedBlock(ctx context.Context) (*Block, error)
 		FindProcessingSlots(ctx context.Context, slot int64, limit int) ([]*Block, error)
+		FindOneByNearSlot(ctx context.Context, slot int64) (*Block, error)
 	}
 
 	customBlockModel struct {
@@ -37,6 +38,12 @@ func (c customBlockModel) WithSession(tx *gorm.DB) BlockModel {
 	c.defaultBlockModel = &newModel
 	c.conn = tx
 	return c
+}
+
+func (m *defaultBlockModel) FindOneByNearSlot(ctx context.Context, slot int64) (*Block, error) {
+	var resp Block
+	err := m.conn.WithContext(ctx).Model(&Block{}).Where("`slot` < ? and `status` = ?", slot, constants.BlockProcessed).Order("slot desc").First(&resp).Error
+	return &resp, err
 }
 
 // NewBlockModel returns a model for the database table.
