@@ -18,6 +18,7 @@ import (
 	"github.com/blocto/solana-go-sdk/types"
 	"github.com/duke-git/lancet/v2/slice"
 	"github.com/gorilla/websocket"
+	"github.com/mr-tron/base58"
 	"github.com/panjf2000/ants/v2"
 	"github.com/zeromicro/go-zero/core/logx"
 	"github.com/zeromicro/go-zero/core/threading"
@@ -162,7 +163,15 @@ func (s *BlockService) ProcessBlock(ctx context.Context, slot int64) {
 	block.SolPrice = solPrice
 
 	slice.ForEach[client.BlockTransaction](blockInfo.Transactions, func(index int, tx client.BlockTransaction) {
-		DeCodeTX(&tx)
+
+		decodeTx := &DecodedTx{
+			BlockDb:         block,
+			Tx:              &tx,
+			TxIndex:         index,
+			SolPrice:        solPrice,
+			TokenAccountMap: tokenAccountMap,
+		}
+		DeCodeTx(ctx, s.sc, decodeTx)
 	})
 
 	err = s.sc.BlockModel.Insert(ctx, block)
@@ -173,32 +182,56 @@ func (s *BlockService) ProcessBlock(ctx context.Context, slot int64) {
 	fmt.Println("Block insert successfully!, the corresponding slot is:", slot)
 }
 
-func DeCodeTX(tx *client.BlockTransaction) {
-	if tx == nil {
+func DeCodeTx(ctx context.Context, sc *svc.ServiceContext, dtx *DecodedTx) (trades []*TradeWithPair, err error) {
+	if dtx.Tx == nil || dtx.BlockDb == nil {
 		return
 	}
-	// 遍历交易的所有指令
-	for i := range tx.Transaction.Message.Instructions {
-		instruction := &tx.Transaction.Message.Instructions[i]
-		DeCodeInstruction(instruction, tx)
+
+	tx := dtx.Tx
+	dtx.TxHash = base58.Encode(tx.Transaction.Signatures[0])
+
+	if tx.Meta.Err != nil {
+		return
 	}
+	// 获取内部指令
+	dtx.InnerInstructionMap = GetInnerInstructionMap(tx)
+
+	if len(tx.Meta.LogMessages) == 0 {
+		return nil, fmt.Errorf("decode tx maybe vote tx, tx hash:%v", dtx.TxHash)
+	}
+
+	// 遍历所有交易指令
+
+	fmt.Println("length of cuurent instructions: %d\n", len(tx.Transaction.Message.Instructions))
+
+	for i := range tx.Transaction.Message.Instructions {
+		//TODO: current transaction signature
+
+		fmt.Printf("transaction signature: %s , index: %d\n", dtx.TxHash, i)
+
+		instruction := &tx.Transaction.Message.Instructions[i]
+		trade, err := DecodeInstruction(ctx, sc, dtx, instruction, i)
+
+		if err != nil {
+			trades = append(trades, trade)
+			continue
+		}
+
+		if err != nil && !errors.Is(err, ErrTokenAmountIsZero) && !errors.Is(err, ErrNotSupportWarp) && !errors.Is(err, ErrNotSupportInstruction) {
+			err = fmt.Errorf("decodeInstruction err:%v", err)
+			logx.Error(err)
+		}
+	}
+	return
 }
 
-func DeCodeInstruction(instruction *types.CompiledInstruction, tx *client.BlockTransaction) (err error) {
-
-	if instruction == nil {
-		return errors.New("instruction is nil")
-	}
-
-	if len(tx.AccountKeys) == 0 {
-		return errors.New("account keys is empty")
-	}
-
+func DecodeInstruction(ctx context.Context, sc *svc.ServiceContext, dtx *DecodedTx, instruction *types.CompiledInstruction, index int) (trade *TradeWithPair, err error) {
+	tx := dtx.Tx
 	program := tx.AccountKeys[instruction.ProgramIDIndex].String()
 
 	if program == ProgramStrPumpFun {
-		DecodePumpInstruction(instruction, tx)
+		trade, err = DecodePumpInstruction(ctx, sc, dtx, instruction, index)
+		return trade, err
 	}
-
-	return ErrUnknownProgram
+	return
 }
