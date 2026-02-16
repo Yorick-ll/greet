@@ -10,6 +10,8 @@ const AtaAccountSize = 165
 const MinSolVolume = uint64(1e7)
 const AutoSlippage = 2500
 
+const SolBaseTokenAddr = "So11111111111111111111111111111111111111112"
+
 const (
 	ChainIconEth  = "https://cdn.pumpx.ai/static/img/chain/eth.png"
 	ChainIconBsc  = "https://cdn.pumpx.ai/static/img/chain/bsc.png"
