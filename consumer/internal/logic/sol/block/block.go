@@ -4,14 +4,13 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"greet/consumer/internal/config"
 	"greet/consumer/internal/svc"
 	"greet/model/solmodel"
 	"greet/pkg/constants"
 	"net/http"
 	"strings"
 	"time"
-
-	"greet/consumer/internal/config"
 
 	"github.com/blocto/solana-go-sdk/client"
 	"github.com/blocto/solana-go-sdk/rpc"
@@ -38,11 +37,11 @@ type BlockService struct {
 	c    *client.Client
 	logx.Logger
 	workerPool *ants.Pool
-	slotChan   chan uint64
 	Conn       *websocket.Conn
 	ctx        context.Context
 	cancel     func(err error)
 	name       string
+	slotChan   chan uint64
 	solPrice   float64
 }
 
@@ -58,7 +57,6 @@ func (s *BlockService) Stop() {
 }
 
 func (s *BlockService) Start() {
-	// 获取区块
 	s.GetBlockFromHttp()
 }
 
@@ -67,16 +65,16 @@ func NewBlockService(sc *svc.ServiceContext, name string, slotChan chan uint64, 
 	ctx, cancel := context.WithCancelCause(context.Background())
 	pool, _ := ants.NewPool(5)
 	solService := &BlockService{
-		c: client.New(rpc.WithEndpoint(config.FindChainRpcByChainId(constants.SolChainIdInt)), rpc.WithHTTPClient(&http.Client{
+		c: client.New(rpc.WithEndpoint(config.FindChainRpcByChainId(SolChainIdInt)), rpc.WithHTTPClient(&http.Client{
 			Timeout: 5 * time.Second,
 		})),
 		sc:         sc,
 		Logger:     logx.WithContext(context.Background()).WithFields(logx.Field("service", fmt.Sprintf("%s-%v", name, index))),
-		slotChan:   slotChan,
 		workerPool: pool,
 		ctx:        ctx,
 		cancel:     cancel,
 		name:       name,
+		slotChan:   slotChan,
 	}
 	return solService
 }
@@ -89,15 +87,14 @@ func (s *BlockService) GetBlockFromHttp() {
 			return
 		case slot, ok := <-s.slotChan:
 			if !ok {
-				fmt.Print("***********")
+				fmt.Println("current channel was closed")
 				return
 			}
-			//打印当前最新slot
-			// fmt.Println("current slot is:", slot)
 
-			threading.GoSafe(func() {
+			threading.RunSafe(func() {
 				s.ProcessBlock(ctx, int64(slot))
 			})
+
 		}
 	}
 }
@@ -106,6 +103,7 @@ func (s *BlockService) ProcessBlock(ctx context.Context, slot int64) {
 	if slot == 0 {
 		return
 	}
+
 	block, err := s.sc.BlockModel.FindOneBySlot(ctx, slot)
 	switch {
 	case errors.Is(err, solmodel.ErrNotFound):
@@ -125,16 +123,16 @@ func (s *BlockService) ProcessBlock(ctx context.Context, slot int64) {
 	}
 
 	blockInfo, err := GetSolBlockInfoDelay(s.sc.GetSolClient(), ctx, uint64(slot))
-	// 只有真正出错（err != nil）或没拿到区块数据（blockInfo == nil）时，才进入异常分支
 	if err != nil || blockInfo == nil {
 		if err != nil && strings.Contains(err.Error(), "was skipped") {
 			block.Status = constants.BlockSkipped
-
+			// Set a default block time if not available
 			s.Infof("processBlock:%v getSolBltants.BlockSkockInfo was skipped, err: %v", slot, err)
 			_ = s.sc.BlockModel.Insert(ctx, block)
 			return
 		}
 		// 异常区块记录，后续做兜底策略，把丢的区块补回来
+		// Set a default block time if not available
 		block.Status = constants.BlockFailed
 		if block.BlockTime.IsZero() {
 			block.BlockTime = time.Now()
@@ -143,35 +141,30 @@ func (s *BlockService) ProcessBlock(ctx context.Context, slot int64) {
 		s.Errorf("processBlock:%v getSolBlockInfo error: %v", slot, err)
 		return
 	}
-	// 设置区块时间
+
+	// Set the block time from the retrieved block info
 	if blockInfo.BlockTime != nil {
 		block.BlockTime = *blockInfo.BlockTime
 	} else {
+		// Fallback to current time if blockInfo.BlockTime is nil
 		block.BlockTime = time.Now()
 	}
-	// 设置区块高度
+
 	if blockInfo.BlockHeight != nil {
 		block.BlockHeight = *blockInfo.BlockHeight
 	}
 	block.Status = constants.BlockProcessed
 
-	//
 	var tokenAccountMap = make(map[string]*TokenAccount)
-
 	solPrice := s.GetBlockSolPrice(ctx, blockInfo, tokenAccountMap)
-
 	if solPrice == 0 {
-
 		s.Error("Sol Price not found")
 		return
 	}
-
-	fmt.Println("Sol Price:", solPrice)
-
+	fmt.Println("sol price is:", solPrice)
 	block.SolPrice = solPrice
-	// trades list
-	trades := make([]*TradeWithPair, 0, 1000)
 
+	trades := make([]*TradeWithPair, 0, 1000)
 	slice.ForEach[client.BlockTransaction](blockInfo.Transactions, func(index int, tx client.BlockTransaction) {
 
 		decodeTx := &DecodedTx{
@@ -181,10 +174,10 @@ func (s *BlockService) ProcessBlock(ctx context.Context, slot int64) {
 			SolPrice:        solPrice,
 			TokenAccountMap: tokenAccountMap,
 		}
+
 		trade, _ := DecodeTx(ctx, s.sc, decodeTx)
 
 		trades = append(trades, trade...)
-
 	})
 
 	tradeMap := make(map[string][]*TradeWithPair)
@@ -195,7 +188,7 @@ func (s *BlockService) ProcessBlock(ctx context.Context, slot int64) {
 		}
 	}
 
-	// 存储
+	//存储
 	group := threading.NewRoutineGroup()
 
 	group.RunSafe(func() {
@@ -214,34 +207,27 @@ func DecodeTx(ctx context.Context, sc *svc.ServiceContext, dtx *DecodedTx) (trad
 	if dtx.Tx == nil || dtx.BlockDb == nil {
 		return
 	}
-
 	tx := dtx.Tx
 	dtx.TxHash = base58.Encode(tx.Transaction.Signatures[0])
 
 	if tx.Meta.Err != nil {
 		return
 	}
-	// 获取内部指令
+
 	dtx.InnerInstructionMap = GetInnerInstructionMap(tx)
 
 	if len(tx.Meta.LogMessages) == 0 {
-		return nil, fmt.Errorf("decode tx maybe vote tx, tx hash:%v", dtx.TxHash)
+		return nil, fmt.Errorf("decode tx maybe vote tx, tx hash: %v", dtx.TxHash)
 	}
 
-	// 遍历所有交易指令
-
-	fmt.Println("length of cuurent instructions: %d\n", len(tx.Transaction.Message.Instructions))
-
+	//遍历交易的所有指令
 	for i := range tx.Transaction.Message.Instructions {
-		//TODO: current transaction signature
-
 		instruction := &tx.Transaction.Message.Instructions[i]
 		trade, err := DecodeInstruction(ctx, sc, dtx, instruction, i)
 		if err == nil && trade != nil {
 			trades = append(trades, trade)
 			continue
 		}
-
 		if err != nil && !errors.Is(err, ErrTokenAmountIsZero) && !errors.Is(err, ErrNotSupportWarp) && !errors.Is(err, ErrNotSupportInstruction) {
 			err = fmt.Errorf("decodeInstruction err:%v", err)
 			logx.Error(err)

@@ -14,7 +14,6 @@ import (
 	"github.com/blocto/solana-go-sdk/common"
 	"github.com/blocto/solana-go-sdk/program/token"
 	"github.com/blocto/solana-go-sdk/rpc"
-
 	solTypes "github.com/blocto/solana-go-sdk/types"
 )
 
@@ -65,26 +64,19 @@ func GetSolBlockInfo(c *client.Client, ctx context.Context, slot uint64) (resp *
 }
 
 func (s *BlockService) GetBlockSolPrice(ctx context.Context, block *client.Block, tokenAccountMap map[string]*TokenAccount) float64 {
-	// 获取SOL价格
-
 	priceList := make([]float64, 0)
-	// 实例化tokenAccountMap
 	if tokenAccountMap == nil {
 		tokenAccountMap = make(map[string]*TokenAccount)
 	}
 
-	// 遍历block.Transactions
 	for i := range block.Transactions {
 		tx := &block.Transactions[i]
 		accountKeys := tx.AccountKeys
 		innerInstructionMap := GetInnerInstructionMap(tx)
-		tokenAccountMap, hashChange := FillTokenAccountMap(tx, tokenAccountMap)
-
-		// 没有改变
-		if !hashChange {
+		tokenAccountMap, hasChange := FillTokenAccountMap(tx, tokenAccountMap)
+		if !hasChange {
 			continue
 		}
-		// 外部指令去看比较可靠平台的价格
 		for _, instruction := range tx.Transaction.Message.Instructions {
 			if in(StableCoinSwapDexes, accountKeys[instruction.ProgramIDIndex]) {
 				price := GetBlockSolPriceByTransfer(accountKeys, innerInstructionMap[instruction.ProgramIDIndex], tokenAccountMap)
@@ -93,7 +85,6 @@ func (s *BlockService) GetBlockSolPrice(ctx context.Context, block *client.Block
 				}
 			}
 		}
-		// 内部指令去看比较可靠平台的价格
 		for _, instructions := range tx.Meta.InnerInstructions {
 			for i, instruction := range instructions.Instructions {
 				if in(StableCoinSwapDexes, accountKeys[instruction.ProgramIDIndex]) {
@@ -105,7 +96,6 @@ func (s *BlockService) GetBlockSolPrice(ctx context.Context, block *client.Block
 				}
 			}
 		}
-
 	}
 	price := RemoveMinAndMaxAndCalculateAverage(priceList)
 
@@ -124,18 +114,6 @@ func (s *BlockService) GetBlockSolPrice(ctx context.Context, block *client.Block
 		return 0
 	}
 	return b.SolPrice
-}
-func GetInnerInstructionByInner(instructions []solTypes.CompiledInstruction, startIndex, innerLen int) *client.InnerInstruction {
-	if startIndex+innerLen+1 > len(instructions) {
-		return nil
-	}
-	innerInstruction := &client.InnerInstruction{
-		Index: uint64(instructions[startIndex].ProgramIDIndex),
-	}
-	for i := 0; i < innerLen; i++ {
-		innerInstruction.Instructions = append(innerInstruction.Instructions, instructions[startIndex+i+1])
-	}
-	return innerInstruction
 }
 
 func RemoveMinAndMaxAndCalculateAverage(nums []float64) float64 {
@@ -179,6 +157,19 @@ func RemoveMinAndMaxAndCalculateAverage(nums []float64) float64 {
 	return average
 }
 
+func GetInnerInstructionByInner(instructions []solTypes.CompiledInstruction, startIndex, innerLen int) *client.InnerInstruction {
+	if startIndex+innerLen+1 > len(instructions) {
+		return nil
+	}
+	innerInstruction := &client.InnerInstruction{
+		Index: uint64(instructions[startIndex].ProgramIDIndex),
+	}
+	for i := 0; i < innerLen; i++ {
+		innerInstruction.Instructions = append(innerInstruction.Instructions, instructions[startIndex+i+1])
+	}
+	return innerInstruction
+}
+
 func in[T comparable](list []T, a T) bool {
 	for i := 0; i < len(list); i++ {
 		if list[i] == a {
@@ -189,7 +180,6 @@ func in[T comparable](list []T, a T) bool {
 }
 
 func GetBlockSolPriceByTransfer(accountKeys []common.PublicKey, innerInstructions *client.InnerInstruction, tokenAccountMap map[string]*TokenAccount) (solPrice float64) {
-
 	if innerInstructions == nil {
 		return
 	}
@@ -254,6 +244,26 @@ func GetBlockSolPriceByTransfer(accountKeys []common.PublicKey, innerInstruction
 		solPrice = 0
 	}
 	return
+}
+
+func IsSwapTransfer(a, b *token.TransferParam, tokenAccountMap map[string]*TokenAccount) bool {
+	if a == nil || b == nil {
+		return false
+	}
+	aFrom := tokenAccountMap[a.From.String()]
+	aTo := tokenAccountMap[a.To.String()]
+	bFrom := tokenAccountMap[b.From.String()]
+	bTo := tokenAccountMap[b.To.String()]
+	if aFrom == nil || aTo == nil || bFrom == nil || bTo == nil {
+		return false
+	}
+	if aFrom.Owner == bTo.Owner {
+		return true
+	}
+	if bFrom.Owner == aTo.Owner {
+		return true
+	}
+	return false
 }
 
 func DecodeTokenTransfer(accountKeys []common.PublicKey, instruction *solTypes.CompiledInstruction) (transfer *token.TransferParam, err error) {
@@ -349,134 +359,88 @@ func DecodeTokenTransfer(accountKeys []common.PublicKey, instruction *solTypes.C
 	return
 }
 
-func IsSwapTransfer(a, b *token.TransferParam, tokenAccountMap map[string]*TokenAccount) bool {
-	if a == nil || b == nil {
-		return false
-	}
-	aFrom := tokenAccountMap[a.From.String()]
-	aTo := tokenAccountMap[a.To.String()]
-	bFrom := tokenAccountMap[b.From.String()]
-	bTo := tokenAccountMap[b.To.String()]
-	if aFrom == nil || aTo == nil || bFrom == nil || bTo == nil {
-		return false
-	}
-	if aFrom.Owner == bTo.Owner {
-		return true
-	}
-	if bFrom.Owner == aTo.Owner {
-		return true
-	}
-	return false
-}
-
 func GetInnerInstructionMap(tx *client.BlockTransaction) map[int]*client.InnerInstruction {
-	// 创建一个内部指令map
 	var innerInstructionMap = make(map[int]*client.InnerInstruction)
-
 	for i := range tx.Meta.InnerInstructions {
 		innerInstructionMap[int(tx.Meta.InnerInstructions[i].Index)] = &tx.Meta.InnerInstructions[i]
 	}
-
 	return innerInstructionMap
 }
 
-func FillTokenAccountMap(tx *client.BlockTransaction, tokenAccountMapIn map[string]*TokenAccount) (tokenAccountMap map[string]*TokenAccount, hashChange bool) {
-	// 填充Token Account 信息
-	// 实例化tokenAccountMap
+func FillTokenAccountMap(tx *client.BlockTransaction, tokenAccountMapIn map[string]*TokenAccount) (tokenAccountMap map[string]*TokenAccount, hasTokenChange bool) {
 	if tokenAccountMapIn == nil {
 		tokenAccountMapIn = make(map[string]*TokenAccount)
 	}
-
 	tokenAccountMap = tokenAccountMapIn
-
 	for _, pre := range tx.Meta.PreTokenBalances {
 		var tokenAccount = tx.AccountKeys[pre.AccountIndex].String()
-
-		preValue, _ := strconv.ParseInt(pre.UITokenAmount.Amount, 10, 64)
-
+		preVaule, _ := strconv.ParseInt(pre.UITokenAmount.Amount, 10, 64)
 		tokenAccountMap[tokenAccount] = &TokenAccount{
 			Owner:               pre.Owner,
 			TokenAccountAddress: tokenAccount,
 			TokenAddress:        pre.Mint,
 			TokenDecimal:        pre.UITokenAmount.Decimals,
-			PreValue:            preValue,
+			PreVaule:            preVaule,
 			Closed:              true,
-			PreValueUiString:    pre.UITokenAmount.UIAmountString,
+			PreValueUIString:    pre.UITokenAmount.UIAmountString,
 		}
 	}
-
 	for _, post := range tx.Meta.PostTokenBalances {
 		var tokenAccount = tx.AccountKeys[post.AccountIndex].String()
-		postValue, _ := strconv.ParseInt(post.UITokenAmount.Amount, 10, 64)
-		// tokenAccount 有值
+		postVaule, _ := strconv.ParseInt(post.UITokenAmount.Amount, 10, 64)
 		if tokenAccountMap[tokenAccount] != nil {
 			tokenAccountMap[tokenAccount].Closed = false
-			tokenAccountMap[tokenAccount].PostValue = postValue
-
-			if tokenAccountMap[tokenAccount].PostValue != tokenAccountMap[tokenAccount].PreValue {
-				hashChange = true
+			tokenAccountMap[tokenAccount].PostValue = postVaule
+			if tokenAccountMap[tokenAccount].PostValue != tokenAccountMap[tokenAccount].PreVaule {
+				hasTokenChange = true
 			}
 		} else {
-			hashChange = true
+			hasTokenChange = true
 			tokenAccountMap[tokenAccount] = &TokenAccount{
 				Owner:               post.Owner,
 				TokenAccountAddress: tokenAccount,
 				TokenAddress:        post.Mint,
 				TokenDecimal:        post.UITokenAmount.Decimals,
-				PostValue:           postValue,
+				PostValue:           postVaule,
 				Init:                true,
-				PostValueUIString:   post.UITokenAmount.UIAmountString,
+				PostVauleUIString:   post.UITokenAmount.UIAmountString,
 			}
 		}
 	}
-
-	// 完善外部指令中账户信息
 	for i := range tx.Transaction.Message.Instructions {
 		instruction := &tx.Transaction.Message.Instructions[i]
 		program := tx.AccountKeys[instruction.ProgramIDIndex].String()
-		// 只处理指定的合约
-		if program == ProgramStrToken || program == ProgramStrToken2022 {
+		if program == ProgramStrToken {
 			DecodeInitAccountInstruction(tx, tokenAccountMap, instruction)
 		}
 	}
-	// 完善内部指令中的账户信息
 	for _, instructions := range tx.Meta.InnerInstructions {
 		for i := range instructions.Instructions {
 			instruction := instructions.Instructions[i]
 			program := tx.AccountKeys[instruction.ProgramIDIndex].String()
-			// 只处理指定的合约
-			if program == ProgramStrToken || program == ProgramStrToken2022 {
+			if program == ProgramStrToken {
 				DecodeInitAccountInstruction(tx, tokenAccountMap, &instruction)
 			}
 		}
 	}
-
-	// token位数
-	tokenDecimaMap := make(map[string]uint8)
-
+	tokenDecimalMap := make(map[string]uint8)
 	for _, v := range tokenAccountMap {
 		if v.TokenDecimal != 0 {
-			tokenDecimaMap[v.TokenAddress] = v.TokenDecimal
-
+			tokenDecimalMap[v.TokenAddress] = v.TokenDecimal
 		}
 	}
-
 	for _, v := range tokenAccountMap {
-		if v.TokenDecimal != 0 {
-			v.TokenDecimal = tokenDecimaMap[v.TokenAddress]
-
+		if v.TokenDecimal == 0 {
+			v.TokenDecimal = tokenDecimalMap[v.TokenAddress]
 		}
-
 	}
 	return
 }
 
 func DecodeInitAccountInstruction(tx *client.BlockTransaction, tokenAccountMap map[string]*TokenAccount, instruction *solTypes.CompiledInstruction) {
-	// 没有指令信息直接返回
 	if len(instruction.Data) == 0 {
 		return
 	}
-
 	var mint, tokenAccount, owner string
 	switch token.Instruction(instruction.Data[0]) {
 	case token.InstructionInitializeAccount:
@@ -512,7 +476,7 @@ func DecodeInitAccountInstruction(tx *client.BlockTransaction, tokenAccountMap m
 			TokenAddress:        mint,
 			TokenAccountAddress: tokenAccount,
 			TokenDecimal:        0,
-			PreValue:            0,
+			PreVaule:            0,
 			PostValue:           0,
 		}
 	}

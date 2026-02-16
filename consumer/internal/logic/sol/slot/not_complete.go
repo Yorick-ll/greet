@@ -7,29 +7,26 @@ import (
 	"time"
 )
 
-type SlotNotCompleteService struct {
+type SloteNotCompleteService struct {
 	*SlotService
 }
 
-func NewSlotNotCompleteService(SlotService *SlotService) *SlotNotCompleteService {
-	return &SlotNotCompleteService{
+func NewSlotNotCompleteService(SlotService *SlotService) *SloteNotCompleteService {
+	return &SloteNotCompleteService{
 		SlotService: SlotService,
 	}
 }
 
-func (s *SlotNotCompleteService) Start() {
+func (s *SloteNotCompleteService) Start() {
 	s.SlotNotCompleted()
 }
 
 func (s *SlotService) SlotNotCompleted() {
-	fmt.Println("fail block processiong !!!")
-
+	fmt.Println("failed block processing")
 	slot := s.sc.Config.Sol.StartBlock
 
-	// 如果slot为0，则从数据库中获取第一个失败的区块
 	if slot == 0 {
 		block, err := s.sc.BlockModel.FindFirstFailedBlock(s.ctx)
-
 		if err != nil {
 			slot = 0
 			return
@@ -39,31 +36,26 @@ func (s *SlotService) SlotNotCompleted() {
 	}
 
 	fmt.Println("The first failed block is:", slot)
-	// 每5秒检查一次
+
 	var checkTicker = time.NewTicker(time.Millisecond * 5000)
-	// 每一秒发送一次
 	var sendTicker = time.NewTicker(time.Millisecond * 1000)
-	// 关闭定时器
 	defer checkTicker.Stop()
 	defer sendTicker.Stop()
 
 	for {
 		select {
-		// 上下文关闭
 		case <-s.ctx.Done():
 			return
 		case <-checkTicker.C:
 			slots, err := s.sc.BlockModel.FindProcessingSlots(s.ctx, int64(slot-100), 50)
-
 			switch {
 			case errors.Is(err, solmodel.ErrNotFound) || len(slots) == 0:
 				return
 			case err == nil:
 			default:
-				s.Error("FindProcessingSlot error: %v", err)
+				s.Error("FindProcessingSlot err:", err)
 			}
-
-			fmt.Println("The number of processing slots is:", len(slots))
+			fmt.Println("The length of failed blocks is:", len(slots))
 
 			for _, slot := range slots {
 				select {
@@ -72,10 +64,8 @@ func (s *SlotService) SlotNotCompleted() {
 				case <-sendTicker.C:
 					s.errorCh <- uint64(slot.Slot)
 				}
-
 			}
 		}
-
 	}
 
 }

@@ -2,28 +2,24 @@ package slot
 
 import (
 	"greet/consumer/internal/svc"
-
-	"github.com/zeromicro/go-zero/core/threading"
 )
 
 type SlotServiceGroup struct {
 	*SlotService
-	Ws          *SlotWsService
-	NotComplete *SlotNotCompleteService
+	Ws           *SlotWsService
+	NotCompleted *SloteNotCompleteService
 }
 
-func NewSlotServiceGroup(sc *svc.ServiceContext, realChan chan uint64) *SlotServiceGroup {
-	slotService := NewSlotService(sc, realChan)
+func NewSlotServiceGroup(sc *svc.ServiceContext, slotChan, errChan chan uint64) *SlotServiceGroup {
+	slotService := NewSlotService(sc, slotChan, errChan)
 	return &SlotServiceGroup{
-		SlotService: slotService,
-		Ws:          NewSlotWsService(slotService),
-		NotComplete: NewSlotNotCompleteService(slotService),
+		SlotService:  slotService,
+		Ws:           NewSlotWsService(slotService),
+		NotCompleted: NewSlotNotCompleteService(slotService),
 	}
 }
 
 func (s *SlotServiceGroup) Start() {
-	threading.GoSafe(func() {
-		s.NotComplete.Start()
-	})
+	go s.NotCompleted.Start()
 	s.Ws.Start()
 }

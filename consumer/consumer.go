@@ -54,7 +54,7 @@ func main() {
 			sg.Add(block.NewBlockService(ctx, "block-real", errChan, i))
 		}
 		//生产者
-		sg.Add(slot.NewSlotServiceGroup(ctx, realChan))
+		sg.Add(slot.NewSlotServiceGroup(ctx, realChan, errChan))
 	}
 
 	fmt.Printf("Starting rpc server at %s...\n", c.ListenOn)

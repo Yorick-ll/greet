@@ -2,7 +2,6 @@ package slot
 
 import (
 	"encoding/json"
-	"fmt"
 	"strings"
 	"time"
 
@@ -28,7 +27,6 @@ func (s *SlotWsService) Start() {
 		s.Infof("SlotWsService:ShutdownListener")
 		s.cancel(errors.New("close slot"))
 	})
-	fmt.Printf("SlotWsService Start")
 	s.SlotWs()
 }
 
@@ -79,9 +77,10 @@ func (s *SlotService) ReadSlotMessage() {
 		return
 	}
 	s.maxSlot = resp.Params.Result.Slot
-	s.realtimech <- resp.Params.Result.Slot
-	// fmt.Println("last slot is:", <-s.realtimech)
 
+	s.realtimeCh <- resp.Params.Result.Slot
+
+	// fmt.Println("latest slot is:", <-s.realtimeCh)
 }
 
 func (s *SlotService) MustConnect() {
@@ -118,6 +117,6 @@ type SlotResp struct {
 			Parent uint64 `json:"parent"`
 			Root   uint64 `json:"root"`
 		} `json:"result"`
-		Subscription uint64 `json:"subscription"`
+		Subscription int `json:"subscription"`
 	} `json:"params"`
 }

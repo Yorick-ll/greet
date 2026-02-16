@@ -34,13 +34,13 @@ type ServiceContext struct {
 func NewServiceContext(c config.Config) *ServiceContext {
 
 	var solClients []*solclient.Client
-	fmt.Println("the lenght of config.Cfg.Sol.NodeUrl:", len(config.Cfg.Sol.NodeUrl), "config.Cfg.Sol.NodeUrl:", config.Cfg.Sol.NodeUrl)
 	for _, node := range config.Cfg.Sol.NodeUrl {
 		client.New(rpc.WithEndpoint(node), rpc.WithHTTPClient(&http.Client{
 			Timeout: 10 * time.Second,
 		}))
 		solClients = append(solClients, client.NewClient(node))
 	}
+
 	dsn := fmt.Sprintf("%s:%s@tcp(%s:%d)/%s?parseTime=true", c.MySQLConfig.User, c.MySQLConfig.Password, c.MySQLConfig.Host, c.MySQLConfig.Port, c.MySQLConfig.DBName)
 	gormLogger := logger.New(
 		log.New(os.Stdout, "\r\n", log.LstdFlags), // io writer
@@ -67,21 +67,20 @@ func NewServiceContext(c config.Config) *ServiceContext {
 	sqlDB.SetMaxOpenConns(500)
 	sqlDB.SetConnMaxLifetime(5 * time.Minute)
 
-	fmt.Println("the lenght of solClients:", len(solClients))
 	return &ServiceContext{
 		Config:     c,
 		solClients: solClients,
 		BlockModel: solmodel.NewBlockModel(db),
+		PairModel:  solmodel.NewPairModel(db),
+		TokenModel: solmodel.NewTokenModel(db),
 	}
 }
 
 func (sc *ServiceContext) GetSolClient() *client.Client {
 	sc.solClientLock.Lock()
 	defer sc.solClientLock.Unlock()
-	if len(sc.solClients) == 0 {
-		return nil
-	}
 	sc.solClientIndex++
+	fmt.Println("the lenght of sc.solclients:", len(sc.solClients))
 	index := sc.solClientIndex % len(sc.solClients)
 	sc.solClient = sc.solClients[index]
 	return sc.solClients[index]
