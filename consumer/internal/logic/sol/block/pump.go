@@ -21,6 +21,12 @@ const (
 	PumpInstructionCreate = 0x77071c0528c81e18
 )
 
+const TokenReservesDiff = 279900000000000
+const SolReservesDiff = 30000000000
+
+const VirtualInitPumpTokenAmount = 1073000191
+const InitSolTokenAmount = 0.015
+
 func GetPumpInstruction(data []byte) uint64 {
 	if len(data) < 8 {
 		return 0
@@ -72,6 +78,7 @@ func DecodePumpInstruction(ctx context.Context, sc *svc.ServiceContext, dtx *Dec
 
 	event := events[dtx.PumpEventIndex]
 	dtx.PumpEventIndex++
+	tokenAddress := event.Mint.String()
 
 	// realTokenReserves := event.VirtualTokenReserves - TokenReservernsDiff
 
@@ -85,6 +92,11 @@ func DecodePumpInstruction(ctx context.Context, sc *svc.ServiceContext, dtx *Dec
 	trade.PairAddr = pair
 	trade.Maker = maker
 	trade.To = to
+	if event.IsBuy {
+		trade.Type = TradeTypeBuy
+	} else {
+		trade.Type = TradeTypeSell
+	}
 
 	trade.BaseTokenAmount = decimal.New(int64(event.SolAmount), -constants.SolDecimal).InexactFloat64()
 	trade.TokenAmount = decimal.New(int64(event.TokenAmount), -int32(tokenDecimal)).InexactFloat64()
@@ -94,10 +106,29 @@ func DecodePumpInstruction(ctx context.Context, sc *svc.ServiceContext, dtx *Dec
 	trade.TotalUSD = decimal.NewFromFloat(trade.BaseTokenAmount).Mul(decimal.NewFromFloat(solPrice)).InexactFloat64()
 	//total_sol_usd_price / token_amount  = >   1300 / 100token  =  13usd /token
 	trade.TokenPriceUSD = decimal.NewFromFloat(trade.TotalUSD).Div(decimal.NewFromFloat(trade.TokenAmount)).InexactFloat64()
+	trade.CurrentBaseTokenInPoolAmount = decimal.New(int64(event.VirtualSolReserves), -constants.SolDecimal).InexactFloat64()
+	trade.CurrentTokenInPoolAmount = decimal.New(int64(event.VirtualTokenReserves), -int32(tokenDecimal)).InexactFloat64()
 
 	fmt.Println("tarde.TokenPriceUSD:", trade.TokenPriceUSD)
 	fmt.Println("tarde.TokenPriceUSD:", trade.PairAddr)
 	fmt.Println("tarde.Hash:", trade.TxHash)
+
+	trade.PairInfo = Pair{
+		ChainId:                SolChainId,
+		Addr:                   pair,
+		BaseTokenAddr:          constants.SolBaseTokenAddr,
+		BaseTokenDecimal:       9,
+		BaseTokenSymbol:        "SOL",
+		TokenAddr:              tokenAddress,
+		TokenDecimal:           tokenAccountInfo.TokenDecimal,
+		BlockTime:              dtx.BlockDb.BlockTime.Unix(),
+		BlockNum:               dtx.BlockDb.Slot,
+		Name:                   constants.PumpFun,
+		InitTokenAmount:        VirtualInitPumpTokenAmount,
+		InitBaseTokenAmount:    InitSolTokenAmount,
+		CurrentBaseTokenAmount: trade.CurrentBaseTokenInPoolAmount,
+		CurrentTokenAmount:     trade.CurrentTokenInPoolAmount,
+	}
 
 	return trade, nil
 }

@@ -26,6 +26,8 @@ import (
 
 var ErrServiceStop = errors.New("service stop")
 
+const SolChainIdInt = 100000
+
 const ProgramStrPumpFun = "6EF8rrecthR5Dkzon8Nwu78hRvfCKubJ14M5uBEwF6P"
 
 var ErrUnknownProgram = errors.New("unknown program")
@@ -104,13 +106,19 @@ func (s *BlockService) ProcessBlock(ctx context.Context, slot int64) {
 	if slot == 0 {
 		return
 	}
-	// 查询当前slot是否被处理过
 	block, err := s.sc.BlockModel.FindOneBySlot(ctx, slot)
 	switch {
-	case err != nil && strings.Contains(err.Error(), "record not found"):
+	case errors.Is(err, solmodel.ErrNotFound):
 		block = &solmodel.Block{
 			Slot: slot,
 		}
+	case err == nil:
+		// Block found, check if already processed
+		if block.Status == constants.BlockProcessed || block.Status == constants.BlockSkipped {
+			s.Infof("processBlock:%v skip decode, block already processed: %#v", slot, block)
+			return
+		}
+		// Continue processing the block
 	default:
 		s.Errorf("processBlock:%v findOneBySlot: %v, error: %v", slot, slot, err)
 		return
@@ -161,6 +169,8 @@ func (s *BlockService) ProcessBlock(ctx context.Context, slot int64) {
 	fmt.Println("Sol Price:", solPrice)
 
 	block.SolPrice = solPrice
+	// trades list
+	trades := make([]*TradeWithPair, 0, 1000)
 
 	slice.ForEach[client.BlockTransaction](blockInfo.Transactions, func(index int, tx client.BlockTransaction) {
 
@@ -171,7 +181,25 @@ func (s *BlockService) ProcessBlock(ctx context.Context, slot int64) {
 			SolPrice:        solPrice,
 			TokenAccountMap: tokenAccountMap,
 		}
-		DeCodeTx(ctx, s.sc, decodeTx)
+		trade, _ := DecodeTx(ctx, s.sc, decodeTx)
+
+		trades = append(trades, trade...)
+
+	})
+
+	tradeMap := make(map[string][]*TradeWithPair)
+
+	for _, trade := range trades {
+		if len(trade.PairAddr) > 0 {
+			tradeMap[trade.PairAddr] = append(tradeMap[trade.PairAddr], trade)
+		}
+	}
+
+	// 存储
+	group := threading.NewRoutineGroup()
+
+	group.RunSafe(func() {
+		s.SaveTrades(ctx, constants.SolChainIdInt, tradeMap)
 	})
 
 	err = s.sc.BlockModel.Insert(ctx, block)
@@ -182,7 +210,7 @@ func (s *BlockService) ProcessBlock(ctx context.Context, slot int64) {
 	fmt.Println("Block insert successfully!, the corresponding slot is:", slot)
 }
 
-func DeCodeTx(ctx context.Context, sc *svc.ServiceContext, dtx *DecodedTx) (trades []*TradeWithPair, err error) {
+func DecodeTx(ctx context.Context, sc *svc.ServiceContext, dtx *DecodedTx) (trades []*TradeWithPair, err error) {
 	if dtx.Tx == nil || dtx.BlockDb == nil {
 		return
 	}
@@ -207,12 +235,9 @@ func DeCodeTx(ctx context.Context, sc *svc.ServiceContext, dtx *DecodedTx) (trad
 	for i := range tx.Transaction.Message.Instructions {
 		//TODO: current transaction signature
 
-		fmt.Printf("transaction signature: %s , index: %d\n", dtx.TxHash, i)
-
 		instruction := &tx.Transaction.Message.Instructions[i]
 		trade, err := DecodeInstruction(ctx, sc, dtx, instruction, i)
-
-		if err != nil {
+		if err == nil && trade != nil {
 			trades = append(trades, trade)
 			continue
 		}
