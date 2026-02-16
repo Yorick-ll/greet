@@ -1,0 +1,39 @@
+syntax = "proto3";
+
+package trade;
+option go_package="./trade";
+
+message Request {
+  string ping = 1;
+}
+
+message Response {
+  string pong = 1;
+}
+
+message CreateMarketOrderRequest {
+  int32 chain_id = 1;
+  string token_ca = 2;
+  SwapType swap_type = 3;
+  string amount_in = 4;
+  bool double_out = 5;
+  bool is_one_click = 6;
+  string user_wallet_address = 7
+}
+
+enum SwapType {
+  SwapTypeAll = 0;
+  Buy = 1;
+  Sell = 2 ;
+}
+
+message CreateMarketOrderResponse {
+  string tx_hash = 1
+}
+
+service Trade {
+  rpc Ping(Request) returns(Response);
+  rpc CreateMarketOrder(CreateMarketOrderRequest) returns(CreateMarketOrderResponse)
+}
+
+
