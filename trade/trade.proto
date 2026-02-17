@@ -18,7 +18,7 @@ message CreateMarketOrderRequest {
   string amount_in = 4;
   bool double_out = 5;
   bool is_one_click = 6;
-  string user_wallet_address = 7
+  string user_wallet_address = 7;
 }
 
 enum SwapType {
@@ -28,12 +28,12 @@ enum SwapType {
 }
 
 message CreateMarketOrderResponse {
-  string tx_hash = 1
+  string tx_hash = 1;
 }
 
 service Trade {
   rpc Ping(Request) returns(Response);
-  rpc CreateMarketOrder(CreateMarketOrderRequest) returns(CreateMarketOrderResponse)
+  rpc CreateMarketOrder(CreateMarketOrderRequest) returns(CreateMarketOrderResponse);
 }
 
 

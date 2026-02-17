@@ -14,11 +14,14 @@ import (
 )
 
 type (
-	Request  = trade.Request
-	Response = trade.Response
+	CreateMarketOrderRequest  = trade.CreateMarketOrderRequest
+	CreateMarketOrderResponse = trade.CreateMarketOrderResponse
+	Request                   = trade.Request
+	Response                  = trade.Response
 
 	Trade interface {
 		Ping(ctx context.Context, in *Request, opts ...grpc.CallOption) (*Response, error)
+		CreateMarketOrder(ctx context.Context, in *CreateMarketOrderRequest, opts ...grpc.CallOption) (*CreateMarketOrderResponse, error)
 	}
 
 	defaultTrade struct {
@@ -35,4 +38,9 @@ func NewTrade(cli zrpc.Client) Trade {
 func (m *defaultTrade) Ping(ctx context.Context, in *Request, opts ...grpc.CallOption) (*Response, error) {
 	client := trade.NewTradeClient(m.cli.Conn())
 	return client.Ping(ctx, in, opts...)
+}
+
+func (m *defaultTrade) CreateMarketOrder(ctx context.Context, in *CreateMarketOrderRequest, opts ...grpc.CallOption) (*CreateMarketOrderResponse, error) {
+	client := trade.NewTradeClient(m.cli.Conn())
+	return client.CreateMarketOrder(ctx, in, opts...)
 }

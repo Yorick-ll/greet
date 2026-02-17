@@ -1,6 +1,21 @@
 Name: trade.rpc
-ListenOn: 0.0.0.0:8080
-Etcd:
-  Hosts:
-  - 127.0.0.1:2379
-  Key: trade.rpc
+ListenOn: 0.0.0.0:8081
+# Etcd:
+#   Hosts:
+#   - 127.0.0.1:2379
+#   Key: trade.rpc
+market_service:
+  target: localhost:8080
+  nonblock: true
+  timeout: 100000  # 3 seconds timeout
+  transport: tcp
+
+Mysql:
+  User: root
+  Password: web3web3
+  Host: 43.99.100.82
+  Port: 3306
+  DBname: fun_dex
+  ConnectTimeout: 30s
+  ReadTimeout: 30s
+  WriteTimeout: 30s

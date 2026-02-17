@@ -27,3 +27,8 @@ func (s *TradeServer) Ping(ctx context.Context, in *trade.Request) (*trade.Respo
 	l := logic.NewPingLogic(ctx, s.svcCtx)
 	return l.Ping(in)
 }
+
+func (s *TradeServer) CreateMarketOrder(ctx context.Context, in *trade.CreateMarketOrderRequest) (*trade.CreateMarketOrderResponse, error) {
+	l := logic.NewCreateMarketOrderLogic(ctx, s.svcCtx)
+	return l.CreateMarketOrder(in)
+}

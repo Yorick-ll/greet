@@ -21,6 +21,55 @@ const (
 	_ = protoimpl.EnforceVersion(protoimpl.MaxVersion - 20)
 )
 
+type SwapType int32
+
+const (
+	SwapType_SwapTypeAll SwapType = 0
+	SwapType_Buy         SwapType = 1
+	SwapType_Sell        SwapType = 2
+)
+
+// Enum value maps for SwapType.
+var (
+	SwapType_name = map[int32]string{
+		0: "SwapTypeAll",
+		1: "Buy",
+		2: "Sell",
+	}
+	SwapType_value = map[string]int32{
+		"SwapTypeAll": 0,
+		"Buy":         1,
+		"Sell":        2,
+	}
+)
+
+func (x SwapType) Enum() *SwapType {
+	p := new(SwapType)
+	*p = x
+	return p
+}
+
+func (x SwapType) String() string {
+	return protoimpl.X.EnumStringOf(x.Descriptor(), protoreflect.EnumNumber(x))
+}
+
+func (SwapType) Descriptor() protoreflect.EnumDescriptor {
+	return file_trade_proto_enumTypes[0].Descriptor()
+}
+
+func (SwapType) Type() protoreflect.EnumType {
+	return &file_trade_proto_enumTypes[0]
+}
+
+func (x SwapType) Number() protoreflect.EnumNumber {
+	return protoreflect.EnumNumber(x)
+}
+
+// Deprecated: Use SwapType.Descriptor instead.
+func (SwapType) EnumDescriptor() ([]byte, []int) {
+	return file_trade_proto_rawDescGZIP(), []int{0}
+}
+
 type Request struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	Ping          string                 `protobuf:"bytes,1,opt,name=ping,proto3" json:"ping,omitempty"`
@@ -109,6 +158,142 @@ func (x *Response) GetPong() string {
 	return ""
 }
 
+type CreateMarketOrderRequest struct {
+	state             protoimpl.MessageState `protogen:"open.v1"`
+	ChainId           int32                  `protobuf:"varint,1,opt,name=chain_id,json=chainId,proto3" json:"chain_id,omitempty"`
+	TokenCa           string                 `protobuf:"bytes,2,opt,name=token_ca,json=tokenCa,proto3" json:"token_ca,omitempty"`
+	SwapType          SwapType               `protobuf:"varint,3,opt,name=swap_type,json=swapType,proto3,enum=trade.SwapType" json:"swap_type,omitempty"`
+	AmountIn          string                 `protobuf:"bytes,4,opt,name=amount_in,json=amountIn,proto3" json:"amount_in,omitempty"`
+	DoubleOut         bool                   `protobuf:"varint,5,opt,name=double_out,json=doubleOut,proto3" json:"double_out,omitempty"`
+	IsOneClick        bool                   `protobuf:"varint,6,opt,name=is_one_click,json=isOneClick,proto3" json:"is_one_click,omitempty"`
+	UserWalletAddress string                 `protobuf:"bytes,7,opt,name=user_wallet_address,json=userWalletAddress,proto3" json:"user_wallet_address,omitempty"`
+	unknownFields     protoimpl.UnknownFields
+	sizeCache         protoimpl.SizeCache
+}
+
+func (x *CreateMarketOrderRequest) Reset() {
+	*x = CreateMarketOrderRequest{}
+	mi := &file_trade_proto_msgTypes[2]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *CreateMarketOrderRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*CreateMarketOrderRequest) ProtoMessage() {}
+
+func (x *CreateMarketOrderRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_trade_proto_msgTypes[2]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use CreateMarketOrderRequest.ProtoReflect.Descriptor instead.
+func (*CreateMarketOrderRequest) Descriptor() ([]byte, []int) {
+	return file_trade_proto_rawDescGZIP(), []int{2}
+}
+
+func (x *CreateMarketOrderRequest) GetChainId() int32 {
+	if x != nil {
+		return x.ChainId
+	}
+	return 0
+}
+
+func (x *CreateMarketOrderRequest) GetTokenCa() string {
+	if x != nil {
+		return x.TokenCa
+	}
+	return ""
+}
+
+func (x *CreateMarketOrderRequest) GetSwapType() SwapType {
+	if x != nil {
+		return x.SwapType
+	}
+	return SwapType_SwapTypeAll
+}
+
+func (x *CreateMarketOrderRequest) GetAmountIn() string {
+	if x != nil {
+		return x.AmountIn
+	}
+	return ""
+}
+
+func (x *CreateMarketOrderRequest) GetDoubleOut() bool {
+	if x != nil {
+		return x.DoubleOut
+	}
+	return false
+}
+
+func (x *CreateMarketOrderRequest) GetIsOneClick() bool {
+	if x != nil {
+		return x.IsOneClick
+	}
+	return false
+}
+
+func (x *CreateMarketOrderRequest) GetUserWalletAddress() string {
+	if x != nil {
+		return x.UserWalletAddress
+	}
+	return ""
+}
+
+type CreateMarketOrderResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	TxHash        string                 `protobuf:"bytes,1,opt,name=tx_hash,json=txHash,proto3" json:"tx_hash,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *CreateMarketOrderResponse) Reset() {
+	*x = CreateMarketOrderResponse{}
+	mi := &file_trade_proto_msgTypes[3]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *CreateMarketOrderResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*CreateMarketOrderResponse) ProtoMessage() {}
+
+func (x *CreateMarketOrderResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_trade_proto_msgTypes[3]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use CreateMarketOrderResponse.ProtoReflect.Descriptor instead.
+func (*CreateMarketOrderResponse) Descriptor() ([]byte, []int) {
+	return file_trade_proto_rawDescGZIP(), []int{3}
+}
+
+func (x *CreateMarketOrderResponse) GetTxHash() string {
+	if x != nil {
+		return x.TxHash
+	}
+	return ""
+}
+
 var File_trade_proto protoreflect.FileDescriptor
 
 const file_trade_proto_rawDesc = "" +
@@ -117,9 +302,26 @@ const file_trade_proto_rawDesc = "" +
 	"\aRequest\x12\x12\n" +
 	"\x04ping\x18\x01 \x01(\tR\x04ping\"\x1e\n" +
 	"\bResponse\x12\x12\n" +
-	"\x04pong\x18\x01 \x01(\tR\x04pong20\n" +
+	"\x04pong\x18\x01 \x01(\tR\x04pong\"\x8c\x02\n" +
+	"\x18CreateMarketOrderRequest\x12\x19\n" +
+	"\bchain_id\x18\x01 \x01(\x05R\achainId\x12\x19\n" +
+	"\btoken_ca\x18\x02 \x01(\tR\atokenCa\x12,\n" +
+	"\tswap_type\x18\x03 \x01(\x0e2\x0f.trade.SwapTypeR\bswapType\x12\x1b\n" +
+	"\tamount_in\x18\x04 \x01(\tR\bamountIn\x12\x1d\n" +
+	"\n" +
+	"double_out\x18\x05 \x01(\bR\tdoubleOut\x12 \n" +
+	"\fis_one_click\x18\x06 \x01(\bR\n" +
+	"isOneClick\x12.\n" +
+	"\x13user_wallet_address\x18\a \x01(\tR\x11userWalletAddress\"4\n" +
+	"\x19CreateMarketOrderResponse\x12\x17\n" +
+	"\atx_hash\x18\x01 \x01(\tR\x06txHash*.\n" +
+	"\bSwapType\x12\x0f\n" +
+	"\vSwapTypeAll\x10\x00\x12\a\n" +
+	"\x03Buy\x10\x01\x12\b\n" +
+	"\x04Sell\x10\x022\x88\x01\n" +
 	"\x05Trade\x12'\n" +
-	"\x04Ping\x12\x0e.trade.Request\x1a\x0f.trade.ResponseB\tZ\a./tradeb\x06proto3"
+	"\x04Ping\x12\x0e.trade.Request\x1a\x0f.trade.Response\x12V\n" +
+	"\x11CreateMarketOrder\x12\x1f.trade.CreateMarketOrderRequest\x1a .trade.CreateMarketOrderResponseB\tZ\a./tradeb\x06proto3"
 
 var (
 	file_trade_proto_rawDescOnce sync.Once
@@ -133,19 +335,26 @@ func file_trade_proto_rawDescGZIP() []byte {
 	return file_trade_proto_rawDescData
 }
 
-var file_trade_proto_msgTypes = make([]protoimpl.MessageInfo, 2)
+var file_trade_proto_enumTypes = make([]protoimpl.EnumInfo, 1)
+var file_trade_proto_msgTypes = make([]protoimpl.MessageInfo, 4)
 var file_trade_proto_goTypes = []any{
-	(*Request)(nil),  // 0: trade.Request
-	(*Response)(nil), // 1: trade.Response
+	(SwapType)(0),                     // 0: trade.SwapType
+	(*Request)(nil),                   // 1: trade.Request
+	(*Response)(nil),                  // 2: trade.Response
+	(*CreateMarketOrderRequest)(nil),  // 3: trade.CreateMarketOrderRequest
+	(*CreateMarketOrderResponse)(nil), // 4: trade.CreateMarketOrderResponse
 }
 var file_trade_proto_depIdxs = []int32{
-	0, // 0: trade.Trade.Ping:input_type -> trade.Request
-	1, // 1: trade.Trade.Ping:output_type -> trade.Response
-	1, // [1:2] is the sub-list for method output_type
-	0, // [0:1] is the sub-list for method input_type
-	0, // [0:0] is the sub-list for extension type_name
-	0, // [0:0] is the sub-list for extension extendee
-	0, // [0:0] is the sub-list for field type_name
+	0, // 0: trade.CreateMarketOrderRequest.swap_type:type_name -> trade.SwapType
+	1, // 1: trade.Trade.Ping:input_type -> trade.Request
+	3, // 2: trade.Trade.CreateMarketOrder:input_type -> trade.CreateMarketOrderRequest
+	2, // 3: trade.Trade.Ping:output_type -> trade.Response
+	4, // 4: trade.Trade.CreateMarketOrder:output_type -> trade.CreateMarketOrderResponse
+	3, // [3:5] is the sub-list for method output_type
+	1, // [1:3] is the sub-list for method input_type
+	1, // [1:1] is the sub-list for extension type_name
+	1, // [1:1] is the sub-list for extension extendee
+	0, // [0:1] is the sub-list for field type_name
 }
 
 func init() { file_trade_proto_init() }
@@ -158,13 +367,14 @@ func file_trade_proto_init() {
 		File: protoimpl.DescBuilder{
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_trade_proto_rawDesc), len(file_trade_proto_rawDesc)),
-			NumEnums:      0,
-			NumMessages:   2,
+			NumEnums:      1,
+			NumMessages:   4,
 			NumExtensions: 0,
 			NumServices:   1,
 		},
 		GoTypes:           file_trade_proto_goTypes,
 		DependencyIndexes: file_trade_proto_depIdxs,
+		EnumInfos:         file_trade_proto_enumTypes,
 		MessageInfos:      file_trade_proto_msgTypes,
 	}.Build()
 	File_trade_proto = out.File
