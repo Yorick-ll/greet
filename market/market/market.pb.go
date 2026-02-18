@@ -485,6 +485,319 @@ func (x *GetNativeTokenPriceResponse) GetBaseTokenPriceUsd() float64 {
 	return 0
 }
 
+// GetTokenInfo
+type GetTokenInfoRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	ChainId       int64                  `protobuf:"varint,1,opt,name=chain_id,json=chainId,proto3" json:"chain_id,omitempty"`
+	TokenAddress  string                 `protobuf:"bytes,2,opt,name=token_address,json=tokenAddress,proto3" json:"token_address,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *GetTokenInfoRequest) Reset() {
+	*x = GetTokenInfoRequest{}
+	mi := &file_market_proto_msgTypes[6]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *GetTokenInfoRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*GetTokenInfoRequest) ProtoMessage() {}
+
+func (x *GetTokenInfoRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_market_proto_msgTypes[6]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use GetTokenInfoRequest.ProtoReflect.Descriptor instead.
+func (*GetTokenInfoRequest) Descriptor() ([]byte, []int) {
+	return file_market_proto_rawDescGZIP(), []int{6}
+}
+
+func (x *GetTokenInfoRequest) GetChainId() int64 {
+	if x != nil {
+		return x.ChainId
+	}
+	return 0
+}
+
+func (x *GetTokenInfoRequest) GetTokenAddress() string {
+	if x != nil {
+		return x.TokenAddress
+	}
+	return ""
+}
+
+type GetTokenInfoResponse struct {
+	state             protoimpl.MessageState `protogen:"open.v1"`
+	ChainId           int64                  `protobuf:"varint,1,opt,name=chain_id,json=chainId,proto3" json:"chain_id,omitempty"`                                    // Chain ID
+	Address           string                 `protobuf:"bytes,2,opt,name=address,proto3" json:"address,omitempty"`                                                    // Token contract address
+	Name              string                 `protobuf:"bytes,3,opt,name=name,proto3" json:"name,omitempty"`                                                          // Token name
+	Symbol            string                 `protobuf:"bytes,4,opt,name=symbol,proto3" json:"symbol,omitempty"`                                                      // Token symbol
+	Decimals          int64                  `protobuf:"varint,5,opt,name=decimals,proto3" json:"decimals,omitempty"`                                                 // Token decimals
+	TotalSupply       float64                `protobuf:"fixed64,6,opt,name=total_supply,json=totalSupply,proto3" json:"total_supply,omitempty"`                       // Total token supply
+	Icon              string                 `protobuf:"bytes,7,opt,name=icon,proto3" json:"icon,omitempty"`                                                          // Token icon URL
+	HoldCount         int64                  `protobuf:"varint,8,opt,name=hold_count,json=holdCount,proto3" json:"hold_count,omitempty"`                              // Number of holders
+	IsCaDropOwner     int64                  `protobuf:"varint,9,opt,name=is_ca_drop_owner,json=isCaDropOwner,proto3" json:"is_ca_drop_owner,omitempty"`              // Owner rights renounced
+	IsCaVerify        int64                  `protobuf:"varint,10,opt,name=is_ca_verify,json=isCaVerify,proto3" json:"is_ca_verify,omitempty"`                        // Contract verified
+	IsHoneyScam       int64                  `protobuf:"varint,11,opt,name=is_honey_scam,json=isHoneyScam,proto3" json:"is_honey_scam,omitempty"`                     // Honeypot check (Cannot sell)
+	IsLiquidLock      int64                  `protobuf:"varint,12,opt,name=is_liquid_lock,json=isLiquidLock,proto3" json:"is_liquid_lock,omitempty"`                  // Liquidity locked
+	IsCanPauseTrade   int64                  `protobuf:"varint,13,opt,name=is_can_pause_trade,json=isCanPauseTrade,proto3" json:"is_can_pause_trade,omitempty"`       // Can pause trading
+	IsCanChangeTax    int64                  `protobuf:"varint,14,opt,name=is_can_change_tax,json=isCanChangeTax,proto3" json:"is_can_change_tax,omitempty"`          // Can modify tax rate
+	IsHaveBlackList   int64                  `protobuf:"varint,15,opt,name=is_have_black_list,json=isHaveBlackList,proto3" json:"is_have_black_list,omitempty"`       // Has blacklist mechanism
+	IsCanAllSell      int64                  `protobuf:"varint,16,opt,name=is_can_all_sell,json=isCanAllSell,proto3" json:"is_can_all_sell,omitempty"`                // Can sell entire balance
+	IsHaveProxy       int64                  `protobuf:"varint,17,opt,name=is_have_proxy,json=isHaveProxy,proto3" json:"is_have_proxy,omitempty"`                     // Has proxy contract
+	IsCanExternalCall int64                  `protobuf:"varint,18,opt,name=is_can_external_call,json=isCanExternalCall,proto3" json:"is_can_external_call,omitempty"` // Contract can make external calls
+	IsCanAddToken     int64                  `protobuf:"varint,19,opt,name=is_can_add_token,json=isCanAddToken,proto3" json:"is_can_add_token,omitempty"`             // Contract has minting capability
+	IsCanChangeToken  int64                  `protobuf:"varint,20,opt,name=is_can_change_token,json=isCanChangeToken,proto3" json:"is_can_change_token,omitempty"`    // Owner can modify user balances
+	SellTax           float64                `protobuf:"fixed64,21,opt,name=sell_tax,json=sellTax,proto3" json:"sell_tax,omitempty"`                                  // Sell tax rate
+	BuyTax            float64                `protobuf:"fixed64,22,opt,name=buy_tax,json=buyTax,proto3" json:"buy_tax,omitempty"`                                     // Buy tax rate
+	TwitterUsername   string                 `protobuf:"bytes,23,opt,name=twitter_username,json=twitterUsername,proto3" json:"twitter_username,omitempty"`            // Twitter username
+	Website           string                 `protobuf:"bytes,24,opt,name=website,proto3" json:"website,omitempty"`                                                   // Official website
+	Telegram          string                 `protobuf:"bytes,25,opt,name=telegram,proto3" json:"telegram,omitempty"`                                                 // Telegram link
+	IsCheckCa         int64                  `protobuf:"varint,26,opt,name=is_check_ca,json=isCheckCa,proto3" json:"is_check_ca,omitempty"`                           // Contract analysis completed
+	CheckCaAt         int64                  `protobuf:"varint,27,opt,name=check_ca_at,json=checkCaAt,proto3" json:"check_ca_at,omitempty"`                           // Contract analysis datetime(3)
+	Program           string                 `protobuf:"bytes,28,opt,name=program,proto3" json:"program,omitempty"`                                                   // token owner program
+	unknownFields     protoimpl.UnknownFields
+	sizeCache         protoimpl.SizeCache
+}
+
+func (x *GetTokenInfoResponse) Reset() {
+	*x = GetTokenInfoResponse{}
+	mi := &file_market_proto_msgTypes[7]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *GetTokenInfoResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*GetTokenInfoResponse) ProtoMessage() {}
+
+func (x *GetTokenInfoResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_market_proto_msgTypes[7]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use GetTokenInfoResponse.ProtoReflect.Descriptor instead.
+func (*GetTokenInfoResponse) Descriptor() ([]byte, []int) {
+	return file_market_proto_rawDescGZIP(), []int{7}
+}
+
+func (x *GetTokenInfoResponse) GetChainId() int64 {
+	if x != nil {
+		return x.ChainId
+	}
+	return 0
+}
+
+func (x *GetTokenInfoResponse) GetAddress() string {
+	if x != nil {
+		return x.Address
+	}
+	return ""
+}
+
+func (x *GetTokenInfoResponse) GetName() string {
+	if x != nil {
+		return x.Name
+	}
+	return ""
+}
+
+func (x *GetTokenInfoResponse) GetSymbol() string {
+	if x != nil {
+		return x.Symbol
+	}
+	return ""
+}
+
+func (x *GetTokenInfoResponse) GetDecimals() int64 {
+	if x != nil {
+		return x.Decimals
+	}
+	return 0
+}
+
+func (x *GetTokenInfoResponse) GetTotalSupply() float64 {
+	if x != nil {
+		return x.TotalSupply
+	}
+	return 0
+}
+
+func (x *GetTokenInfoResponse) GetIcon() string {
+	if x != nil {
+		return x.Icon
+	}
+	return ""
+}
+
+func (x *GetTokenInfoResponse) GetHoldCount() int64 {
+	if x != nil {
+		return x.HoldCount
+	}
+	return 0
+}
+
+func (x *GetTokenInfoResponse) GetIsCaDropOwner() int64 {
+	if x != nil {
+		return x.IsCaDropOwner
+	}
+	return 0
+}
+
+func (x *GetTokenInfoResponse) GetIsCaVerify() int64 {
+	if x != nil {
+		return x.IsCaVerify
+	}
+	return 0
+}
+
+func (x *GetTokenInfoResponse) GetIsHoneyScam() int64 {
+	if x != nil {
+		return x.IsHoneyScam
+	}
+	return 0
+}
+
+func (x *GetTokenInfoResponse) GetIsLiquidLock() int64 {
+	if x != nil {
+		return x.IsLiquidLock
+	}
+	return 0
+}
+
+func (x *GetTokenInfoResponse) GetIsCanPauseTrade() int64 {
+	if x != nil {
+		return x.IsCanPauseTrade
+	}
+	return 0
+}
+
+func (x *GetTokenInfoResponse) GetIsCanChangeTax() int64 {
+	if x != nil {
+		return x.IsCanChangeTax
+	}
+	return 0
+}
+
+func (x *GetTokenInfoResponse) GetIsHaveBlackList() int64 {
+	if x != nil {
+		return x.IsHaveBlackList
+	}
+	return 0
+}
+
+func (x *GetTokenInfoResponse) GetIsCanAllSell() int64 {
+	if x != nil {
+		return x.IsCanAllSell
+	}
+	return 0
+}
+
+func (x *GetTokenInfoResponse) GetIsHaveProxy() int64 {
+	if x != nil {
+		return x.IsHaveProxy
+	}
+	return 0
+}
+
+func (x *GetTokenInfoResponse) GetIsCanExternalCall() int64 {
+	if x != nil {
+		return x.IsCanExternalCall
+	}
+	return 0
+}
+
+func (x *GetTokenInfoResponse) GetIsCanAddToken() int64 {
+	if x != nil {
+		return x.IsCanAddToken
+	}
+	return 0
+}
+
+func (x *GetTokenInfoResponse) GetIsCanChangeToken() int64 {
+	if x != nil {
+		return x.IsCanChangeToken
+	}
+	return 0
+}
+
+func (x *GetTokenInfoResponse) GetSellTax() float64 {
+	if x != nil {
+		return x.SellTax
+	}
+	return 0
+}
+
+func (x *GetTokenInfoResponse) GetBuyTax() float64 {
+	if x != nil {
+		return x.BuyTax
+	}
+	return 0
+}
+
+func (x *GetTokenInfoResponse) GetTwitterUsername() string {
+	if x != nil {
+		return x.TwitterUsername
+	}
+	return ""
+}
+
+func (x *GetTokenInfoResponse) GetWebsite() string {
+	if x != nil {
+		return x.Website
+	}
+	return ""
+}
+
+func (x *GetTokenInfoResponse) GetTelegram() string {
+	if x != nil {
+		return x.Telegram
+	}
+	return ""
+}
+
+func (x *GetTokenInfoResponse) GetIsCheckCa() int64 {
+	if x != nil {
+		return x.IsCheckCa
+	}
+	return 0
+}
+
+func (x *GetTokenInfoResponse) GetCheckCaAt() int64 {
+	if x != nil {
+		return x.CheckCaAt
+	}
+	return 0
+}
+
+func (x *GetTokenInfoResponse) GetProgram() string {
+	if x != nil {
+		return x.Program
+	}
+	return ""
+}
+
 var File_market_proto protoreflect.FileDescriptor
 
 const file_market_proto_rawDesc = "" +
@@ -530,11 +843,47 @@ const file_market_proto_rawDesc = "" +
 	"\vsearch_time\x18\x02 \x01(\tR\n" +
 	"searchTime\"N\n" +
 	"\x1bGetNativeTokenPriceResponse\x12/\n" +
-	"\x14base_token_price_usd\x18\x01 \x01(\x01R\x11baseTokenPriceUsd2\xf0\x01\n" +
+	"\x14base_token_price_usd\x18\x01 \x01(\x01R\x11baseTokenPriceUsd\"U\n" +
+	"\x13GetTokenInfoRequest\x12\x19\n" +
+	"\bchain_id\x18\x01 \x01(\x03R\achainId\x12#\n" +
+	"\rtoken_address\x18\x02 \x01(\tR\ftokenAddress\"\xc6\a\n" +
+	"\x14GetTokenInfoResponse\x12\x19\n" +
+	"\bchain_id\x18\x01 \x01(\x03R\achainId\x12\x18\n" +
+	"\aaddress\x18\x02 \x01(\tR\aaddress\x12\x12\n" +
+	"\x04name\x18\x03 \x01(\tR\x04name\x12\x16\n" +
+	"\x06symbol\x18\x04 \x01(\tR\x06symbol\x12\x1a\n" +
+	"\bdecimals\x18\x05 \x01(\x03R\bdecimals\x12!\n" +
+	"\ftotal_supply\x18\x06 \x01(\x01R\vtotalSupply\x12\x12\n" +
+	"\x04icon\x18\a \x01(\tR\x04icon\x12\x1d\n" +
+	"\n" +
+	"hold_count\x18\b \x01(\x03R\tholdCount\x12'\n" +
+	"\x10is_ca_drop_owner\x18\t \x01(\x03R\risCaDropOwner\x12 \n" +
+	"\fis_ca_verify\x18\n" +
+	" \x01(\x03R\n" +
+	"isCaVerify\x12\"\n" +
+	"\ris_honey_scam\x18\v \x01(\x03R\visHoneyScam\x12$\n" +
+	"\x0eis_liquid_lock\x18\f \x01(\x03R\fisLiquidLock\x12+\n" +
+	"\x12is_can_pause_trade\x18\r \x01(\x03R\x0fisCanPauseTrade\x12)\n" +
+	"\x11is_can_change_tax\x18\x0e \x01(\x03R\x0eisCanChangeTax\x12+\n" +
+	"\x12is_have_black_list\x18\x0f \x01(\x03R\x0fisHaveBlackList\x12%\n" +
+	"\x0fis_can_all_sell\x18\x10 \x01(\x03R\fisCanAllSell\x12\"\n" +
+	"\ris_have_proxy\x18\x11 \x01(\x03R\visHaveProxy\x12/\n" +
+	"\x14is_can_external_call\x18\x12 \x01(\x03R\x11isCanExternalCall\x12'\n" +
+	"\x10is_can_add_token\x18\x13 \x01(\x03R\risCanAddToken\x12-\n" +
+	"\x13is_can_change_token\x18\x14 \x01(\x03R\x10isCanChangeToken\x12\x19\n" +
+	"\bsell_tax\x18\x15 \x01(\x01R\asellTax\x12\x17\n" +
+	"\abuy_tax\x18\x16 \x01(\x01R\x06buyTax\x12)\n" +
+	"\x10twitter_username\x18\x17 \x01(\tR\x0ftwitterUsername\x12\x18\n" +
+	"\awebsite\x18\x18 \x01(\tR\awebsite\x12\x1a\n" +
+	"\btelegram\x18\x19 \x01(\tR\btelegram\x12\x1e\n" +
+	"\vis_check_ca\x18\x1a \x01(\x03R\tisCheckCa\x12\x1e\n" +
+	"\vcheck_ca_at\x18\x1b \x01(\x03R\tcheckCaAt\x12\x18\n" +
+	"\aprogram\x18\x1c \x01(\tR\aprogram2\xbb\x02\n" +
 	"\x06Market\x12)\n" +
 	"\x04Ping\x12\x0f.market.Request\x1a\x10.market.Response\x12[\n" +
 	"\x12GetPairInfoByToken\x12!.market.GetPairInfoByTokenRequest\x1a\".market.GetPairInfoByTokenResponse\x12^\n" +
-	"\x13GetNativeTokenPrice\x12\".market.GetNativeTokenPriceRequest\x1a#.market.GetNativeTokenPriceResponseB\n" +
+	"\x13GetNativeTokenPrice\x12\".market.GetNativeTokenPriceRequest\x1a#.market.GetNativeTokenPriceResponse\x12I\n" +
+	"\fGetTokenInfo\x12\x1b.market.GetTokenInfoRequest\x1a\x1c.market.GetTokenInfoResponseB\n" +
 	"Z\b./marketb\x06proto3"
 
 var (
@@ -549,7 +898,7 @@ func file_market_proto_rawDescGZIP() []byte {
 	return file_market_proto_rawDescData
 }
 
-var file_market_proto_msgTypes = make([]protoimpl.MessageInfo, 6)
+var file_market_proto_msgTypes = make([]protoimpl.MessageInfo, 8)
 var file_market_proto_goTypes = []any{
 	(*Request)(nil),                     // 0: market.Request
 	(*Response)(nil),                    // 1: market.Response
@@ -557,16 +906,20 @@ var file_market_proto_goTypes = []any{
 	(*GetPairInfoByTokenResponse)(nil),  // 3: market.GetPairInfoByTokenResponse
 	(*GetNativeTokenPriceRequest)(nil),  // 4: market.GetNativeTokenPriceRequest
 	(*GetNativeTokenPriceResponse)(nil), // 5: market.GetNativeTokenPriceResponse
+	(*GetTokenInfoRequest)(nil),         // 6: market.GetTokenInfoRequest
+	(*GetTokenInfoResponse)(nil),        // 7: market.GetTokenInfoResponse
 }
 var file_market_proto_depIdxs = []int32{
 	0, // 0: market.Market.Ping:input_type -> market.Request
 	2, // 1: market.Market.GetPairInfoByToken:input_type -> market.GetPairInfoByTokenRequest
 	4, // 2: market.Market.GetNativeTokenPrice:input_type -> market.GetNativeTokenPriceRequest
-	1, // 3: market.Market.Ping:output_type -> market.Response
-	3, // 4: market.Market.GetPairInfoByToken:output_type -> market.GetPairInfoByTokenResponse
-	5, // 5: market.Market.GetNativeTokenPrice:output_type -> market.GetNativeTokenPriceResponse
-	3, // [3:6] is the sub-list for method output_type
-	0, // [0:3] is the sub-list for method input_type
+	6, // 3: market.Market.GetTokenInfo:input_type -> market.GetTokenInfoRequest
+	1, // 4: market.Market.Ping:output_type -> market.Response
+	3, // 5: market.Market.GetPairInfoByToken:output_type -> market.GetPairInfoByTokenResponse
+	5, // 6: market.Market.GetNativeTokenPrice:output_type -> market.GetNativeTokenPriceResponse
+	7, // 7: market.Market.GetTokenInfo:output_type -> market.GetTokenInfoResponse
+	4, // [4:8] is the sub-list for method output_type
+	0, // [0:4] is the sub-list for method input_type
 	0, // [0:0] is the sub-list for extension type_name
 	0, // [0:0] is the sub-list for extension extendee
 	0, // [0:0] is the sub-list for field type_name
@@ -583,7 +936,7 @@ func file_market_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_market_proto_rawDesc), len(file_market_proto_rawDesc)),
 			NumEnums:      0,
-			NumMessages:   6,
+			NumMessages:   8,
 			NumExtensions: 0,
 			NumServices:   1,
 		},

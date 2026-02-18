@@ -18,6 +18,8 @@ type (
 	GetNativeTokenPriceResponse = market.GetNativeTokenPriceResponse
 	GetPairInfoByTokenRequest   = market.GetPairInfoByTokenRequest
 	GetPairInfoByTokenResponse  = market.GetPairInfoByTokenResponse
+	GetTokenInfoRequest         = market.GetTokenInfoRequest
+	GetTokenInfoResponse        = market.GetTokenInfoResponse
 	Request                     = market.Request
 	Response                    = market.Response
 
@@ -25,6 +27,7 @@ type (
 		Ping(ctx context.Context, in *Request, opts ...grpc.CallOption) (*Response, error)
 		GetPairInfoByToken(ctx context.Context, in *GetPairInfoByTokenRequest, opts ...grpc.CallOption) (*GetPairInfoByTokenResponse, error)
 		GetNativeTokenPrice(ctx context.Context, in *GetNativeTokenPriceRequest, opts ...grpc.CallOption) (*GetNativeTokenPriceResponse, error)
+		GetTokenInfo(ctx context.Context, in *GetTokenInfoRequest, opts ...grpc.CallOption) (*GetTokenInfoResponse, error)
 	}
 
 	defaultMarket struct {
@@ -51,4 +54,9 @@ func (m *defaultMarket) GetPairInfoByToken(ctx context.Context, in *GetPairInfoB
 func (m *defaultMarket) GetNativeTokenPrice(ctx context.Context, in *GetNativeTokenPriceRequest, opts ...grpc.CallOption) (*GetNativeTokenPriceResponse, error) {
 	client := market.NewMarketClient(m.cli.Conn())
 	return client.GetNativeTokenPrice(ctx, in, opts...)
+}
+
+func (m *defaultMarket) GetTokenInfo(ctx context.Context, in *GetTokenInfoRequest, opts ...grpc.CallOption) (*GetTokenInfoResponse, error) {
+	client := market.NewMarketClient(m.cli.Conn())
+	return client.GetTokenInfo(ctx, in, opts...)
 }

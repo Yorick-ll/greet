@@ -37,3 +37,8 @@ func (s *MarketServer) GetNativeTokenPrice(ctx context.Context, in *market.GetNa
 	l := logic.NewGetNativeTokenPriceLogic(ctx, s.svcCtx)
 	return l.GetNativeTokenPrice(in)
 }
+
+func (s *MarketServer) GetTokenInfo(ctx context.Context, in *market.GetTokenInfoRequest) (*market.GetTokenInfoResponse, error) {
+	l := logic.NewGetTokenInfoLogic(ctx, s.svcCtx)
+	return l.GetTokenInfo(in)
+}

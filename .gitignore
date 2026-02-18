@@ -13,8 +13,11 @@ coverage.html
 # 依赖
 /vendor/
 
+# 生成工具/本地构建
+pkg/solana-anchor-go/
+
 # 本地/环境配置（按需取消注释）
-# .env
+.env
 # *.local.yaml
 
 # IDE

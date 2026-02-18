@@ -6,6 +6,8 @@ type Config struct {
 	zrpc.RpcServerConf
 	MySQLConfig   MySQLConfig        `json:"Mysql"`
 	MarketService zrpc.RpcClientConf `json:"market_service"`
+	SolConfig     ChainConfig        `json:"Sol"`
+	SimulateOnly  bool               `json:"simulate_only,optional" json:",env=SIMULATE_ONLY"`
 }
 
 type MySQLConfig struct {
@@ -14,4 +16,12 @@ type MySQLConfig struct {
 	Host     string `json:"Host"     json:",env=MYSQL_HOST"`
 	Port     int    `json:"Port"     json:",env=MYSQL_PORT"`
 	DBName   string `json:"DBname"   json:",env=MYSQL_DBNAME"`
+}
+
+type ChainConfig struct {
+	ChainId uint64   `json:"ChainId" json:",env=SOL_CHAINID"`
+	Enable  bool     `json:"Enable"  json:",env=SOL_ENABLE"`
+	NodeUrl []string `json:"NodeUrl" json:",env=SOL_NODEURL"`
+	Jito    string   `json:"Jito"    json:",env=SOL_JITO"`
+	UUID    string   `json:"UUID"    json:",env=SOL_UUID"`
 }

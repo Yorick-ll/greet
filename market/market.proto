@@ -52,8 +52,46 @@ message GetNativeTokenPriceResponse {
   double base_token_price_usd = 1;
 }
 
+// GetTokenInfo
+message GetTokenInfoRequest {
+  int64 chain_id = 1;
+  string token_address = 2;
+}
+
+message GetTokenInfoResponse {
+  int64 chain_id = 1;                  // Chain ID
+  string address = 2;                  // Token contract address
+  string name = 3;                     // Token name
+  string symbol = 4;                   // Token symbol
+  int64 decimals = 5;                  // Token decimals
+  double total_supply = 6;             // Total token supply
+  string icon = 7;                     // Token icon URL
+  int64 hold_count = 8;                // Number of holders
+  int64 is_ca_drop_owner = 9;           // Owner rights renounced
+  int64 is_ca_verify = 10;              // Contract verified
+  int64 is_honey_scam = 11;             // Honeypot check (Cannot sell)
+  int64 is_liquid_lock = 12;            // Liquidity locked
+  int64 is_can_pause_trade = 13;        // Can pause trading
+  int64 is_can_change_tax = 14;         // Can modify tax rate
+  int64 is_have_black_list = 15;        // Has blacklist mechanism
+  int64 is_can_all_sell = 16;           // Can sell entire balance
+  int64 is_have_proxy = 17;             // Has proxy contract
+  int64 is_can_external_call = 18;      // Contract can make external calls
+  int64 is_can_add_token = 19;          // Contract has minting capability
+  int64 is_can_change_token = 20;       // Owner can modify user balances
+  double sell_tax = 21;                // Sell tax rate
+  double buy_tax = 22;                 // Buy tax rate
+  string twitter_username = 23;        // Twitter username
+  string website = 24;                 // Official website
+  string telegram = 25;                // Telegram link
+  int64 is_check_ca = 26;               // Contract analysis completed
+  int64 check_ca_at = 27;              // Contract analysis datetime(3)
+  string program = 28;                 // token owner program
+}
+
 service Market {
   rpc Ping(Request) returns(Response);
   rpc GetPairInfoByToken(GetPairInfoByTokenRequest) returns (GetPairInfoByTokenResponse);
   rpc GetNativeTokenPrice(GetNativeTokenPriceRequest) returns (GetNativeTokenPriceResponse);
+  rpc GetTokenInfo(GetTokenInfoRequest) returns (GetTokenInfoResponse);
 }

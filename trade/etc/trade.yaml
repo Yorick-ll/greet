@@ -19,3 +19,13 @@ Mysql:
   ConnectTimeout: 30s
   ReadTimeout: 30s
   WriteTimeout: 30s
+
+Sol:
+  ChainId: 100000
+  #jito 不为空，就用jito地址来发送 (disabled for devnet)
+  Jito: ""
+  NodeUrl:
+    - "https://api.devnet.solana.com"
+    - "https://devnet.helius-rpc.com/?api-key=2d7580ca-93d2-4404-9316-656c2726a26a"
+  Enable: true
+  UUID: "e322635ed37c12a203af5f1e845278f26c2d46ca"

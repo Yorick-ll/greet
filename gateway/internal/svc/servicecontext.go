@@ -1,7 +1,7 @@
 package svc
 
 import (
-	"greet/api/internal/config"
+	"greet/gateway/internal/config"
 	"greet/rpc/greet"
 
 	"github.com/zeromicro/go-zero/zrpc"

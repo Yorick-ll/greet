@@ -2,9 +2,11 @@ package logic
 
 import (
 	"context"
+	"time"
 
 	"greet/market/internal/svc"
 	"greet/market/market"
+	"greet/model/solmodel"
 
 	"github.com/zeromicro/go-zero/core/logx"
 )
@@ -24,7 +26,20 @@ func NewGetNativeTokenPriceLogic(ctx context.Context, svcCtx *svc.ServiceContext
 }
 
 func (l *GetNativeTokenPriceLogic) GetNativeTokenPrice(in *market.GetNativeTokenPriceRequest) (*market.GetNativeTokenPriceResponse, error) {
-	// todo: add your logic here and delete this line
+	resp := &market.GetNativeTokenPriceResponse{
+		BaseTokenPriceUsd: 0,
+	}
 
-	return &market.GetNativeTokenPriceResponse{}, nil
+	searchTime, err := time.Parse(time.DateTime, in.SearchTime)
+	if err != nil {
+		return nil, nil
+	}
+
+	tradeModel := solmodel.NewTradeModel(l.svcCtx.DB)
+	price, err := tradeModel.GetNativeTokenPrice(l.ctx, in.ChainId, searchTime)
+	if err != nil {
+		return resp, err
+	}
+	resp.BaseTokenPriceUsd = price
+	return resp, nil
 }

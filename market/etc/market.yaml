@@ -1,6 +1,27 @@
 Name: market.rpc
-ListenOn: 0.0.0.0:8083
+ListenOn: 0.0.0.0:8080
 # Etcd:
 #   Hosts:
 #   - 127.0.0.1:2379
 #   Key: market.rpc
+
+# Mysql:
+#   Master:
+#     Username: root
+#     Password: web3web3
+#     Path: 43.99.100.82
+#     Port: 3306
+#     Dbname: fun_dex
+#     MaxOpenConns: 500
+#     MaxIdleConns: 200
+
+
+Mysql:
+  Master:
+    Username: root
+    Password: web3ite.fun
+    Path: sh-cdb-d1aqnkzo.sql.tencentcdb.com
+    Port: 26218
+    Dbname: fun_dexs
+    MaxOpenConns: 500
+    MaxIdleConns: 200
